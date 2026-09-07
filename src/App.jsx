@@ -6,6 +6,7 @@ import Callback from './pages/Callback';
 import Account from './pages/Account';
 import Trade from './pages/Trade';
 
+
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
   if (loading) return <div style={styles.loader}>Loading Application...</div>;
