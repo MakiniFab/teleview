@@ -40,18 +40,20 @@ function NavigationBar() {
                   onChange={(e) => switchAccount(e.target.value)}
                   className="account-select"
                 >
-                  <option value="demo">Demo ({accountData.account})</option>
-                  <option value="real">Real ({accountData.account})</option>
+                  <option value="demo">Demo ({accountData?.account || "Demo"})</option>
+                  <option value="real">Real ({accountData?.account || "Real"})</option>
                 </select>
               </div>
               <div className="badge-divider"></div>
-              <div className="account-balance">${accountData.balance.toFixed(2)} {accountData.currency}</div>
+              <div className="account-balance">
+                ${(accountData?.balance ?? 0).toFixed(2)} {accountData?.currency || "USD"}
+              </div>
               <button onClick={handleDisconnect} className="disconnect-btn">Disconnect</button>
             </div>
           ) : (
             <div className="account-badge">
               <span className="status-dot offline"></span>
-              <span style={{ color: "#94a3b8" }}>Not Connected</span>
+              <span style={{ color: "var(--trade-muted)" }}>Not Connected</span>
             </div>
           )}
         </div>

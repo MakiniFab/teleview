@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./MarketAnalysis.css";
 
-// Directly point to your live Render Flask endpoint
 const API_ENDPOINT = "https://back-analysis.onrender.com/api/metrics";
 
 export default function MarketAnalysis() {
@@ -53,20 +52,20 @@ export default function MarketAnalysis() {
       let biasClass = "bias-neutral";
 
       if (pLoss >= 60.0) {
-        bias = "STRONG BEARISH (PUT Optimal)";
+        bias = "STRONG BEARISH (PUT)";
         biasClass = "bias-bearish-strong";
       } else if (pLoss >= 54.0) {
         bias = "MODERATE BEARISH";
         biasClass = "bias-bearish";
       } else if (pLoss <= 40.0) {
-        bias = "STRONG BULLISH (CALL Optimal)";
+        bias = "STRONG BULLISH (CALL)";
         biasClass = "bias-bullish-strong";
       } else if (pLoss <= 46.0) {
         bias = "MODERATE BULLISH";
         biasClass = "bias-bullish";
       }
 
-      return { symbol, total, wins, losses, pLoss, pWin, bias, biasClass };
+      return { symbol, total, pLoss, pWin, bias, biasClass };
     });
 
     // Sort descending by Risk Probability (P_loss)
@@ -89,13 +88,20 @@ export default function MarketAnalysis() {
     return processAndSortMarketData(fallbackList);
   };
 
+  const totalSamplesSum = data.reduce((acc, curr) => acc + curr.total, 0);
+  const avgRiskProb = data.length
+    ? (data.reduce((acc, curr) => acc + curr.pLoss, 0) / data.length).toFixed(1)
+    : "0.0";
+
   return (
     <div className="market-analysis-container">
       <div className="analysis-header">
-        <h2>Market Risk Analysis & Bias Ranking</h2>
-        <p className="subtitle">
-          Real-time metrics sorted in <strong>Descending Order by Risk Probability (P_loss)</strong>.
-        </p>
+        <div>
+          <h2>Statistical Market Bias & Probability Index</h2>
+          <p className="subtitle">
+            Ranked by <strong>Risk Probability (P_loss)</strong>. Dynamic directional classification engine.
+          </p>
+        </div>
         <button onClick={fetchMarketData} className="refresh-btn" disabled={loading}>
           {loading ? "Syncing..." : "Sync Live Stats"}
         </button>
@@ -103,18 +109,31 @@ export default function MarketAnalysis() {
 
       {error && <div className="error-banner">{error}</div>}
 
+      <div className="stats-cards-grid">
+        <div className="stat-card">
+          <span className="stat-label">Tracked Assets</span>
+          <span className="stat-value">{data.length}</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-label">Total Backtest Samples</span>
+          <span className="stat-value">{totalSamplesSum.toLocaleString()}</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-label">Avg Risk Probability</span>
+          <span className="stat-value">{avgRiskProb}%</span>
+        </div>
+      </div>
+
       <div className="table-wrapper">
         <table className="analysis-table">
           <thead>
             <tr>
               <th>Rank</th>
               <th>Volatility Index</th>
-              <th>Total Samples</th>
-              <th>Wins (W)</th>
-              <th>Losses (L)</th>
               <th>Win Ratio (P_win)</th>
               <th>Risk Probability (P_loss)</th>
-              <th>Market Bias / Outlook</th>
+              <th>Risk Visualizer</th>
+              <th>Market Bias / Direction</th>
             </tr>
           </thead>
           <tbody>
@@ -123,11 +142,16 @@ export default function MarketAnalysis() {
                 <tr key={item.symbol || index} className={index % 2 === 0 ? "even-row" : ""}>
                   <td className="rank-cell">#{index + 1}</td>
                   <td className="symbol-cell">{item.symbol}</td>
-                  <td>{item.total}</td>
-                  <td className="win-text">{item.wins}</td>
-                  <td className="loss-text">{item.losses}</td>
-                  <td>{item.pWin.toFixed(2)}%</td>
+                  <td className="pwin-cell">{item.pWin.toFixed(2)}%</td>
                   <td className="ploss-cell">{item.pLoss.toFixed(2)}%</td>
+                  <td className="visual-bar-cell">
+                    <div className="risk-bar-track">
+                      <div
+                        className="risk-bar-fill"
+                        style={{ width: `${Math.min(100, Math.max(0, item.pLoss))}%` }}
+                      ></div>
+                    </div>
+                  </td>
                   <td>
                     <span className={`bias-badge ${item.biasClass}`}>
                       {item.bias}
@@ -137,7 +161,7 @@ export default function MarketAnalysis() {
               ))
             ) : (
               <tr>
-                <td colSpan="8" className="no-data-cell">
+                <td colSpan="6" className="no-data-cell">
                   {loading ? "Fetching live market metrics..." : "No market metrics available."}
                 </td>
               </tr>

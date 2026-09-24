@@ -1,34 +1,312 @@
-/* src/pages/ContactPage.css */
+/* ==========================================================================
+   Contact.css — Mobile-First Dark Layout (Fab Software Solutions Mombasa)
+   ========================================================================== */
+
+:root {
+  --bg-primary: #0a0e17;
+  --bg-card: #121824;
+  --bg-input: #1a2332;
+  --border-color: #232f45;
+  --border-focus: #3b82f6;
+  --text-main: #f3f4f6;
+  --text-muted: #9ca3af;
+  --accent-blue: #3b82f6;
+  --accent-blue-hover: #2563eb;
+  
+  --success-bg: rgba(16, 185, 129, 0.15);
+  --success-text: #34d399;
+  --success-border: rgba(16, 185, 129, 0.3);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+}
+
+/* --------------------------------------------------------------------------
+   1. Base Mobile First Layout (< 768px)
+   -------------------------------------------------------------------------- */
+
 .contact-container {
-  max-width: 800px;
+  width: 100%;
+  min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-main);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  box-sizing: border-box;
+}
+
+.contact-wrapper {
+  max-width: 1100px;
   margin: 0 auto;
-  color: #f8fafc;
+  padding: 20px 16px;
 }
 
-.contact-container .card {
-  background: #1e293b;
-  padding: 2rem;
-  border-radius: 8px;
-  border: 1px solid #334155;
+/* Header & Company Tag */
+.contact-header {
+  margin-bottom: 24px;
 }
 
-.contact-container h1 {
-  margin-top: 0;
-  color: #60a5fa;
+.brand-badge {
+  display: inline-block;
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--accent-blue);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
 }
 
-.info-list {
-  margin-top: 1.5rem;
+.contact-header h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: #ffffff;
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Layout Grid Mobile Default */
+.contact-content {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 20px;
 }
 
-.info-item a {
-  color: #38bdf8;
+/* Info Cards & Links */
+.info-cards-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
   text-decoration: none;
+  color: var(--text-main);
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
-.info-item a:hover {
-  text-decoration: underline;
+.link-card:hover {
+  border-color: var(--accent-blue);
+  background: #161e2e;
+}
+
+.info-icon {
+  font-size: 1.25rem;
+  background: var(--bg-input);
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.info-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.info-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.info-value {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #ffffff;
+  word-break: break-all;
+}
+
+/* Sample Social Links Group */
+.social-links-wrapper {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.social-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.social-btn {
+  display: block;
+  text-align: center;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.social-btn:hover {
+  opacity: 0.9;
+}
+
+.telegram {
+  background: #229ed9;
+  color: #ffffff;
+}
+
+.whatsapp {
+  background: #25d366;
+  color: #000000;
+}
+
+.github {
+  background: #24292e;
+  color: #ffffff;
+  border: 1px solid var(--border-color);
+}
+
+/* Form Container */
+.form-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 20px 16px;
+  box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.4);
+}
+
+.success-banner {
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success-text);
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 20px;
+  font-size: 0.85rem;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  color: var(--text-main);
+  font-size: 0.9rem;
+  font-family: inherit;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.submit-btn {
+  width: 100%;
+  background: var(--accent-blue);
+  color: #ffffff;
+  border: none;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  min-height: 48px; /* Touch target baseline */
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: var(--accent-blue-hover);
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   2. Desktop Layout (>= 768px)
+   -------------------------------------------------------------------------- */
+
+@media (min-width: 768px) {
+  .contact-wrapper {
+    padding: 32px 24px;
+  }
+
+  .contact-header h2 {
+    font-size: 1.8rem;
+  }
+
+  .subtitle {
+    font-size: 0.98rem;
+  }
+
+  .contact-content {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .social-buttons {
+    flex-direction: column;
+  }
+
+  .form-card {
+    padding: 28px;
+  }
 }

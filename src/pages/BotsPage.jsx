@@ -6,6 +6,24 @@ const API_BASE = "https://api.derivws.com";
 const APP_ID = "34sztETpkcwjcAayV9upz";
 const CURRENCY = "USD";
 
+// Standard Volatility Markets Range
+const VOLATILITY_MARKETS = [
+  { id: "R_10", label: "Volatility 10 Index" },
+  { id: "R_25", label: "Volatility 25 Index" },
+  { id: "R_50", label: "Volatility 50 Index" },
+  { id: "R_75", label: "Volatility 75 Index" },
+  { id: "R_100", label: "Volatility 100 Index" },
+];
+
+// Bot Suite Menu Configuration
+const BOT_SUITE = [
+  { id: "aegis", name: "Aegis Matrix Engine", isAccessible: true, badge: "ACTIVE" },
+  { id: "quantum", name: "Quantum Spike Pro", isAccessible: false, badge: "PREMIUM" },
+  { id: "titan", name: "Titan High-Frequency", isAccessible: false, badge: "PREMIUM" },
+  { id: "apex", name: "Apex Martingale V2", isAccessible: false, badge: "PREMIUM" },
+  { id: "nexus", name: "Nexus Grid Trader", isAccessible: false, badge: "PREMIUM" },
+];
+
 export default function BotsPage() {
   const {
     patToken,
@@ -17,13 +35,19 @@ export default function BotsPage() {
     engineRef2,
   } = useTrading();
 
-  const [symbol, setSymbol] = useState("R_100");
-  const [duration, setDuration] = useState(2);
-  const [durationUnit, setDurationUnit] = useState("m");
+  const [selectedSymbol, setSelectedSymbol] = useState("R_100");
+  const [contractType, setContractType] = useState("PUT");
+  const [autoMarketSelect, setAutoMarketSelect] = useState(true);
+  const [durationMinutes, setDurationMinutes] = useState(2);
   const [minStake, setMinStake] = useState(1.0);
   const [targetProfit, setTargetProfit] = useState(45.0);
+  const [activeBotTab, setActiveBotTab] = useState("aegis");
 
-  const requestIdRef = useRef(200);
+  // Track win counts for Banked Wins metric
+  const [bankedWinsCount, setBankedWinsCount] = useState(0);
+  const [totalSettledCount, setTotalSettledCount] = useState(0);
+
+  const requestIdRef = useRef(300);
   const isExecutingRef = useRef(false);
   const activeStakeRef = useRef(minStake);
   const settledIdsRef = useRef(new Set());
@@ -36,7 +60,7 @@ export default function BotsPage() {
     const time = new Date().toLocaleTimeString();
     setBot2State((prev) => ({
       ...prev,
-      logs: [...prev.logs.slice(-99), `[Bot 2 | ${time}] ${msg}`],
+      logs: [...prev.logs.slice(-99), `[Aegis Engine | ${time}] ${msg}`],
     }));
   };
 
@@ -49,7 +73,7 @@ export default function BotsPage() {
 
   const unlockAndRetry = (ws, delay = 2000, reason = "") => {
     if (!isTradingRef.current) return;
-    if (reason) addLog(`Resetting execution state: ${reason}`);
+    if (reason) addLog(`Reset: ${reason}`);
     clearExecutionTimeout();
     isExecutingRef.current = false;
 
@@ -65,7 +89,7 @@ export default function BotsPage() {
     return text ? JSON.parse(text) : null;
   };
 
-  // Synchronize base stake and target profit ratio ($1 stake -> $45 profit)
+  // Synchronize base stake ($1.00) to target profit ratio ($45.00)
   const handleStakeChange = (e) => {
     const val = Math.max(1.0, parseFloat(e.target.value) || 1.0);
     setMinStake(val);
@@ -74,21 +98,15 @@ export default function BotsPage() {
 
   const handleDurationChange = (e) => {
     const val = parseInt(e.target.value, 10) || 2;
-    if (durationUnit === "m") {
-      setDuration(Math.max(2, val));
-    } else {
-      setDuration(Math.max(120, val));
-    }
+    setDurationMinutes(Math.max(2, val));
   };
 
-  const handleUnitChange = (e) => {
-    const unit = e.target.value;
-    setDurationUnit(unit);
-    if (unit === "m" && duration < 2) {
-      setDuration(2);
-    } else if (unit === "s" && duration < 120) {
-      setDuration(120);
-    }
+  /**
+   * Randomly selects a Volatility Index from Volatility 10 to 100 Index.
+   */
+  const getRandomMarket = () => {
+    const randomIndex = Math.floor(Math.random() * VOLATILITY_MARKETS.length);
+    return VOLATILITY_MARKETS[randomIndex].id;
   };
 
   const sendProposal = (ws) => {
@@ -105,17 +123,14 @@ export default function BotsPage() {
     const stake = engineRef2.current.getNextStake(Number(minStake));
     activeStakeRef.current = stake;
 
-    const durationInMs =
-      durationUnit === "m"
-        ? Number(duration) * 60 * 1000
-        : Number(duration) * 1000;
+    const durationInMs = Number(durationMinutes) * 60 * 1000;
 
     clearExecutionTimeout();
     executionTimeoutRef.current = setTimeout(() => {
       unlockAndRetry(
         ws,
         1000,
-        "Safety timeout reached (no settlement received)."
+        "Execution safety timeout reached (no settlement received)."
       );
     }, durationInMs + 15000);
 
@@ -124,16 +139,16 @@ export default function BotsPage() {
         proposal: 1,
         amount: stake,
         basis: "stake",
-        contract_type: "PUT",
+        contract_type: contractType,
         currency: CURRENCY,
-        duration: Number(duration),
-        duration_unit: durationUnit,
-        underlying_symbol: symbol,
+        duration: Number(durationMinutes),
+        duration_unit: "m",
+        underlying_symbol: selectedSymbol,
         req_id: ++requestIdRef.current,
       })
     );
     addLog(
-      `Requested ${symbol} Fall (${duration}${durationUnit}) @ $${stake.toFixed(
+      `Submitted Order: ${selectedSymbol} ${contractType} (${durationMinutes}m) @ $${stake.toFixed(
         2
       )}`
     );
@@ -144,27 +159,32 @@ export default function BotsPage() {
       return alert("Please connect your PAT on the Dashboard first.");
     }
 
-    // Input validations
     if (Number(minStake) < 1.0) {
       return alert("Minimum base stake must be at least $1.00.");
     }
-    if (durationUnit === "m" && Number(duration) < 2) {
-      return alert("Minimum duration is 2 minutes.");
+    if (Number(durationMinutes) < 2) {
+      return alert("Minimum contract duration is 2 minutes.");
     }
-    if (durationUnit === "s" && Number(duration) < 120) {
-      return alert("Minimum duration is 120 seconds (2 minutes).");
+
+    // Pick random market if auto market selection is enabled
+    let activeMarket = selectedSymbol;
+    if (autoMarketSelect) {
+      activeMarket = getRandomMarket();
+      setSelectedSymbol(activeMarket);
     }
 
     isTradingRef.current = true;
     isExecutingRef.current = false;
     lossStreakRef.current = 0;
     totalSessionProfitRef.current = 0;
+    setBankedWinsCount(0);
+    setTotalSettledCount(0);
     setBot2State((prev) => ({ ...prev, isTrading: true, logs: [] }));
     settledIdsRef.current.clear();
     engineRef2.current.MIN_STAKE = Number(minStake);
 
     try {
-      addLog(`Fetching ${accountType.toUpperCase()} Options account...`);
+      addLog(`Connecting to ${accountType.toUpperCase()} Options Account...`);
       const accResponse = await fetch(
         `${API_BASE}/trading/v1/options/accounts`,
         {
@@ -176,9 +196,7 @@ export default function BotsPage() {
       );
       const accData = await readJsonResponse(accResponse);
       if (!accResponse.ok) {
-        throw new Error(
-          accData?.error?.message || "Failed to fetch accounts."
-        );
+        throw new Error(accData?.error?.message || "Failed to fetch account info.");
       }
 
       const accountsArray = Array.isArray(accData?.data?.data)
@@ -196,7 +214,7 @@ export default function BotsPage() {
         throw new Error(`No ${accountType} Options account found.`);
       }
 
-      addLog("Requesting secure WebSocket OTP URL via REST...");
+      addLog("Requesting WebSocket session OTP token...");
       const otpResponse = await fetch(
         `${API_BASE}/trading/v1/options/accounts/${encodeURIComponent(
           targetAccount.account_id
@@ -211,20 +229,20 @@ export default function BotsPage() {
       );
       const otpData = await readJsonResponse(otpResponse);
       if (!otpResponse.ok) {
-        throw new Error(otpData?.error?.message || "OTP request failed.");
+        throw new Error(otpData?.error?.message || "OTP session authorization failed.");
       }
 
       const wsUrl = otpData?.data?.url;
       if (!wsUrl) {
-        throw new Error("Deriv did not return a valid WebSocket OTP URL.");
+        throw new Error("Deriv REST API did not return a valid WebSocket endpoint.");
       }
 
-      addLog("Connecting to secure Deriv WebSocket...");
+      addLog("Establishing secure WebSocket connection...");
       const ws = new WebSocket(wsUrl);
       wsRef2.current = ws;
 
       ws.onopen = () => {
-        addLog("WebSocket connected successfully. Executing immediately...");
+        addLog(`WebSocket active. Market locked: ${activeMarket} (${contractType})`);
         sendProposal(ws);
       };
 
@@ -237,8 +255,8 @@ export default function BotsPage() {
         }
 
         if (data.error) {
-          addLog(`API Error: ${data.error.message}`);
-          unlockAndRetry(ws, 3000, "API returned error");
+          addLog(`Deriv API Error: ${data.error.message}`);
+          unlockAndRetry(ws, 3000, "API Error encountered");
           return;
         }
 
@@ -252,13 +270,13 @@ export default function BotsPage() {
               })
             );
           } else {
-            unlockAndRetry(ws, 2000, "Empty proposal response");
+            unlockAndRetry(ws, 2000, "Received empty market proposal");
           }
         }
 
         if (data.msg_type === "buy") {
           const contractId = data.buy.contract_id;
-          addLog(`Bought FALL contract #${contractId}`);
+          addLog(`Position Opened: ${contractType} Contract #${contractId}`);
           setBot2State((prev) => ({
             ...prev,
             contract: { contractId, profit: 0 },
@@ -305,34 +323,42 @@ export default function BotsPage() {
             const isWin = row.outcome === "W" || profit > 0;
             totalSessionProfitRef.current += Number(row.profitLoss || 0);
 
+            // Update win counters
+            setTotalSettledCount((prev) => prev + 1);
+            if (isWin) {
+              setBankedWinsCount((prev) => prev + 1);
+            }
+
             setBot2State((prev) => ({
               ...prev,
-              history: [...prev.history, { bot: "Bot 2", ...row }],
+              history: [...prev.history, { bot: "Aegis Matrix", ...row }],
             }));
 
             addLog(
-              `Trade Settled: [${
+              `Settlement: [${
                 row.outcome
-              }] P/L: $${row.profitLoss.toFixed(
+              }] Net P/L: $${row.profitLoss.toFixed(
                 2
-              )} | Session Total: $${totalSessionProfitRef.current.toFixed(2)}`
+              )} | Session Acc: $${totalSessionProfitRef.current.toFixed(2)}`
             );
 
-            // STOP CONDITION 1: Win when stake was above $7.00
+            // STOP RULE 1: Stake > $7.00 Win Cap
             if (isWin && activeStakeRef.current > 7.0) {
               addLog(
-                `[TARGET REACHED] Stake was $${activeStakeRef.current.toFixed(
+                `[CAP TRIGGERED] Stake was $${activeStakeRef.current.toFixed(
                   2
-                )} (> $7.00) and won. Stopping bot.`
+                )} (> $7.00) and won. Block complete. Halting bot.`
               );
               stopBot();
               return;
             }
 
-            // STOP CONDITION 2: Target profit reached
+            // STOP RULE 2: Target profit goal
             if (totalSessionProfitRef.current >= Number(targetProfit)) {
               addLog(
-                `[TARGET REACHED] Target profit of $${targetProfit} achieved! Stopping bot.`
+                `[TARGET REACHED] Target profit goal of $${targetProfit.toFixed(
+                  2
+                )} achieved! Halting bot.`
               );
               stopBot();
               return;
@@ -345,22 +371,21 @@ export default function BotsPage() {
               lossStreakRef.current = 0;
             }
 
-            // STOP CONDITION 3: 50 consecutive losses reached without a win
+            // STOP RULE 3: 50 loss safety limit
             if (lossStreakRef.current >= 50) {
               addLog(
-                `[SAFETY STOP] Reached 50 consecutive losses without a win. Stopping bot.`
+                `[CIRCUIT BREAKER] Reached 50 trades without a win. Block complete. Halting bot.`
               );
               stopBot();
               return;
             }
 
-            // Continue trading loop
             unlockAndRetry(ws, 1500);
           }
         }
       };
 
-      ws.onerror = () => addLog("WebSocket connection error encountered.");
+      ws.onerror = () => addLog("WebSocket network connection error.");
 
       ws.onclose = () => {
         addLog("WebSocket connection closed.");
@@ -377,7 +402,7 @@ export default function BotsPage() {
         }
       };
     } catch (err) {
-      addLog(`Setup Error: ${err.message}`);
+      addLog(`Initialization Error: ${err.message}`);
       isTradingRef.current = false;
       isExecutingRef.current = false;
       clearExecutionTimeout();
@@ -394,7 +419,7 @@ export default function BotsPage() {
       wsRef2.current.close();
     }
     setBot2State((prev) => ({ ...prev, isTrading: false }));
-    addLog("Bot 2 stopped.");
+    addLog("Aegis Matrix Engine stopped.");
   };
 
   const nextStakeVal = engineRef2.current.getNextStake(Number(minStake));
@@ -402,141 +427,190 @@ export default function BotsPage() {
   return (
     <div className="bots-container">
       <div className="bots-page-header">
-        <h1>Trading Bot Control Center</h1>
+        <h1>Trading Control Center</h1>
         <p className="page-description">
-          Automated Fall Advanced Engine operating with automated risk cap controls.
+          Aegis Matrix Engine • Metrics-Driven Bias Optimization and Risk Management System.
         </p>
       </div>
 
-      <div
-        className={`bot-card premium-card ${
-          bot2State.isTrading ? "active-trading" : ""
-        }`}
-      >
-        <div className="bot-header">
-          <div className="bot-title-group">
-            <div className="title-with-badge">
-              <h2>Fall Advanced Engine</h2>
-              <span className="premium-badge">PREMIUM</span>
+      <div className="bots-workspace">
+        {/* Sidebar / Top Bot Navigation */}
+        <aside className="bots-sidebar">
+          <div className="sidebar-title">Automated Bot Suite</div>
+          <nav className="bot-menu-list">
+            {BOT_SUITE.map((bot) => (
+              <button
+                key={bot.id}
+                className={`bot-menu-item ${
+                  activeBotTab === bot.id ? "active" : ""
+                } ${!bot.isAccessible ? "locked" : ""}`}
+                onClick={() => {
+                  if (bot.isAccessible) {
+                    setActiveBotTab(bot.id);
+                  }
+                }}
+              >
+                <div className="menu-item-info">
+                  <span className="bot-name">{bot.name}</span>
+                  {!bot.isAccessible && (
+                    <span className="lock-icon">🔒</span>
+                  )}
+                </div>
+                <span className={`menu-badge ${bot.isAccessible ? "badge-active" : "badge-locked"}`}>
+                  {bot.badge}
+                </span>
+              </button>
+            ))}
+          </nav>
+        </aside>
+
+        {/* Bot Execution Console */}
+        <main className="bot-main-content">
+          <div
+            className={`bot-card premium-card ${
+              bot2State.isTrading ? "active-trading" : ""
+            }`}
+          >
+            <div className="bot-header">
+              <div className="bot-title-group">
+                <div className="title-with-badge">
+                  <h2>Aegis Matrix Engine</h2>
+                  <span className="premium-badge">PREMIUM</span>
+                </div>
+                <span className="bot-subtitle">
+                  Back-Analysis Endpoint Integration • 2-Min Expiration • Anti-Market Bias
+                </span>
+              </div>
+              <span className="account-tag">{accountType.toUpperCase()}</span>
             </div>
-            <span className="bot-subtitle">2-Min High Yield • Bearish PUT Bias</span>
-          </div>
-          <span className="account-tag">{accountType.toUpperCase()}</span>
-        </div>
 
-        <div className="bot-explanation">
-          <p>
-            <strong>Overview:</strong> Executes automated <code>PUT</code> options.
-          </p>
-          <ul className="usage-list">
-            <li><strong>Cap Rule:</strong> Stops automatically on WIN when stake exceeds $7.00.</li>
-            <li><strong>Loss Ceiling:</strong> Stops if 50 trades pass without a win.</li>
-            <li><strong>Target Profit:</strong> Stops upon reaching target profit.</li>
-          </ul>
-        </div>
+            <div className="bot-explanation">
+              <p>
+                Enable <strong>Auto Market Selection</strong> and set your base stake. Target profit will automatically set itself based on your stake size.
+              </p>
+              <ul className="usage-list">
+                <li>
+                  <strong>Execution Note:</strong> Simply start the bot. The bot will run automatically and stop when the trading block ends.
+                </li>
+                <li>
+                  <strong>Connection Requirement:</strong> Please ensure you maintain a stable Wi-Fi connection throughout execution.
+                </li>
+              </ul>
+            </div>
 
-        <div className="config-grid">
-          <div className="form-field">
-            <label>Target Market</label>
-            <select
-              value={symbol}
-              onChange={(e) => setSymbol(e.target.value)}
-              disabled={bot2State.isTrading}
-            >
-              <option value="R_100">Volatility 100 Index</option>
-              <option value="R_50">Volatility 50 Index</option>
-            </select>
-          </div>
+            <div className="config-grid">
+              <div className="form-field">
+                <label>Market Selection Mode</label>
+                <select
+                  value={autoMarketSelect ? "auto" : "manual"}
+                  onChange={(e) => setAutoMarketSelect(e.target.value === "auto")}
+                  disabled={bot2State.isTrading}
+                >
+                  <option value="auto">Auto Market Selection (Random Volatility Index)</option>
+                  <option value="manual">Manual Market Lock</option>
+                </select>
+              </div>
 
-          <div className="form-field">
-            <label>Duration Value (Min: 2m)</label>
-            <input
-              type="number"
-              min={durationUnit === "m" ? 2 : 120}
-              value={duration}
-              onChange={handleDurationChange}
-              disabled={bot2State.isTrading}
-            />
-          </div>
+              <div className="form-field">
+                <label>Active Market Index</label>
+                <select
+                  value={selectedSymbol}
+                  onChange={(e) => setSelectedSymbol(e.target.value)}
+                  disabled={bot2State.isTrading || autoMarketSelect}
+                >
+                  {VOLATILITY_MARKETS.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          <div className="form-field">
-            <label>Duration Unit</label>
-            <select
-              value={durationUnit}
-              onChange={handleUnitChange}
-              disabled={bot2State.isTrading}
-            >
-              <option value="m">Minutes</option>
-              <option value="s">Seconds</option>
-            </select>
-          </div>
+              <div className="form-field">
+                <label>Contract Direction</label>
+                <select
+                  value={contractType}
+                  onChange={(e) => setContractType(e.target.value)}
+                  disabled={bot2State.isTrading}
+                >
+                  <option value="PUT">PUT (Fall)</option>
+                  <option value="CALL">CALL (Rise)</option>
+                </select>
+              </div>
 
-          <div className="form-field">
-            <label>Base Stake ($ Min: 1.00)</label>
-            <input
-              type="number"
-              step="0.50"
-              min="1.00"
-              value={minStake}
-              onChange={handleStakeChange}
-              disabled={bot2State.isTrading}
-            />
-          </div>
+              <div className="form-field">
+                <label>Contract Duration (Minutes, Min: 2m)</label>
+                <input
+                  type="number"
+                  min="2"
+                  step="1"
+                  value={durationMinutes}
+                  onChange={handleDurationChange}
+                  disabled={bot2State.isTrading}
+                />
+              </div>
 
-          <div className="form-field">
-            <label>Target Profit ($)</label>
-            <input
-              type="number"
-              step="1.00"
-              value={targetProfit}
-              onChange={(e) => setTargetProfit(parseFloat(e.target.value) || 0)}
-              disabled={bot2State.isTrading}
-            />
-          </div>
-        </div>
+              <div className="form-field">
+                <label>Base Stake ($ Min: 1.00)</label>
+                <input
+                  type="number"
+                  step="0.50"
+                  min="1.00"
+                  value={minStake}
+                  onChange={handleStakeChange}
+                  disabled={bot2State.isTrading}
+                />
+              </div>
+            </div>
 
-        <div className="metrics-ribbon">
-          <div className="metric-item">
-            <span className="metric-label">Next Stake</span>
-            <span className="metric-value">${nextStakeVal.toFixed(2)}</span>
-          </div>
-          <div className="metric-item">
-            <span className="metric-label">Target Profit</span>
-            <span className="metric-value">${targetProfit.toFixed(2)}</span>
-          </div>
-          <div className="metric-item">
-            <span className="metric-label">Loss Streak</span>
-            <span className="metric-value">{lossStreakRef.current} / 50</span>
-          </div>
-          <div className="metric-item">
-            <span className="metric-label">Active Contract</span>
-            <span className="metric-value">
-              {bot2State.contract?.contractId
-                ? `#${bot2State.contract.contractId}`
-                : "None"}
-            </span>
-          </div>
-        </div>
+            <div className="metrics-ribbon">
+              <div className="metric-item">
+                <span className="metric-label">Engine Status</span>
+                <span
+                  className={`metric-value ${
+                    bot2State.isTrading ? "status-on" : "status-off"
+                  }`}
+                >
+                  {bot2State.isTrading ? "ONLINE" : "OFF"}
+                </span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Next Stake</span>
+                <span className="metric-value">${nextStakeVal.toFixed(2)}</span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Target Profit</span>
+                <span className="metric-value">${targetProfit.toFixed(2)}</span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Banked Wins</span>
+                <span className="metric-value highlight-win">
+                  {bankedWinsCount} / {totalSettledCount}
+                </span>
+              </div>
+            </div>
 
-        <div className="controls">
-          {!bot2State.isTrading ? (
-            <button onClick={startBot} className="start-btn premium-btn">
-              Start Bot 2 (2-Min Engine)
-            </button>
-          ) : (
-            <button onClick={stopBot} className="stop-btn">
-              Stop Bot 2
-            </button>
-          )}
-        </div>
+            <div className="controls">
+              {!bot2State.isTrading ? (
+                <button onClick={startBot} className="start-btn premium-btn">
+                  Start Aegis Engine
+                </button>
+              ) : (
+                <button onClick={stopBot} className="stop-btn">
+                  Stop Aegis Engine
+                </button>
+              )}
+            </div>
 
-        <div className="console-wrapper">
-          <div className="console-title">Live Execution Logs</div>
-          <pre className="logs-console">
-            {bot2State.logs.join("\n") ||
-              "Bot 2 idle. Ready to start trading session..."}
-          </pre>
-        </div>
+            <div className="console-wrapper">
+              <div className="console-title">Engine Terminal Output</div>
+              <pre className="logs-console">
+                {bot2State.logs.join("\n") ||
+                  "Aegis Engine standing by. Ready to launch trading session..."}
+              </pre>
+            </div>
+          </div>
+        </main>
       </div>
     </div>
   );
