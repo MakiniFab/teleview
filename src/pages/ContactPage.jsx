@@ -53,14 +53,6 @@ export default function ContactPage() {
               </div>
             </div>
 
-            <div className="info-card">
-              <div className="info-icon">📍</div>
-              <div className="info-details">
-                <span className="info-label">Head Office</span>
-                <span className="info-value">Mombasa, Kenya</span>
-              </div>
-            </div>
-
             <a href="mailto:info@fabsoftwaresolutions.example.com" className="info-card link-card">
               <div className="info-icon">✉️</div>
               <div className="info-details">

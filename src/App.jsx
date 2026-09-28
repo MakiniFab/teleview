@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
 import { TradingProvider, useTrading } from "./context/TradingContext";
 
@@ -12,6 +12,11 @@ import "./App.css";
 
 function NavigationBar() {
   const { isConnected, accountType, switchAccount, accountData, handleDisconnect } = useTrading();
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("app_theme") || "dark";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+  }, []);
 
   return (
     <header className="app-header">

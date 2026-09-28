@@ -6,6 +6,18 @@ export default function HomePage() {
   const { patToken, setPatToken, handleConnect, isConnected, accountType, switchAccount, accountData, error, status } = useTrading();
   const [inputToken, setInputToken] = useState(patToken);
 
+  // Initialize state directly from the DOM attribute set by App.jsx or localStorage fallback
+  const [theme, setTheme] = useState(
+    () => document.documentElement.getAttribute("data-theme") || localStorage.getItem("app_theme") || "dark"
+  );
+
+  const toggleTheme = () => {
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);
+    document.documentElement.setAttribute("data-theme", nextTheme);
+    localStorage.setItem("app_theme", nextTheme);
+  };
+
   const onSubmit = (e) => {
     e.preventDefault();
     if (!inputToken.trim()) return;
@@ -17,13 +29,30 @@ export default function HomePage() {
     <div className="home-container">
       {/* Brand & Hero Banner */}
       <section className="hero-card">
-        <div className="brand-badge">
-          <span className="logo-text">Autom<span className="logo-accent">8</span> DERIV Trading Website.</span>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div className="brand-badge">
+            <span className="logo-text">Autom<span className="logo-accent">8</span> DERIV Trading Website.</span>
+          </div>
+
+          <button 
+            type="button" 
+            onClick={toggleTheme} 
+            className="toggle-btn"
+            style={{ padding: "0.4rem 0.8rem", width: "auto" }}
+          >
+            {theme === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode"}
+          </button>
         </div>
+
         <h1>Automated Options and Analysis Suite</h1>
-        <p className="hero-subtitle">
-          Connect your Deriv account securely using a Personal Access Token (PAT) to unlock automated staking strategies.
-        </p>
+        <div className="hero-subtitle-container">
+          <p className="hero-subtitle">
+            Connect your Deriv account securely using a <strong>Personal Access Token (PAT)</strong> to grant access to our automated execution engine. 
+          </p>
+          <p className="hero-description">
+            Our bot algorithms are engineered by an elite team of quantitative financial analysts and software engineers. Built to continuously analyze market microstructure and capture real-time directional signals, they automatically execute high-probability contracts on your behalf with institutional precision.
+          </p>
+        </div>
       </section>
 
       <div className="grid-layout">

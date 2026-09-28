@@ -1,0 +1,513 @@
+/* ==========================================
+   AEGIS ENGINE - VIBRANT MODERN DYNAMIC LIGHT
+   White Base, Crystal Black Text & High-Octane RGB
+   ========================================== */
+
+/* Universal Dynamic Variables */
+.bot-card.premium-card {
+  --aegis-white-pure: #ffffff;
+  --aegis-white-glass: rgba(255, 255, 255, 0.9);
+  --aegis-border-soft: #e2e8f0;
+  --aegis-border-medium: #cbd5e1;
+  
+  --aegis-black-text: #050505;
+  --aegis-black-muted: #334155;
+
+  /* High-Vibrancy RGB Palette */
+  --aegis-neon-green: #00d26a;
+  --aegis-neon-red: #ff3355;
+  --aegis-neon-blue: #0066ff;
+  
+  /* Vibrant Glow Effects */
+  --aegis-glow-blue: rgba(0, 102, 255, 0.25);
+  --aegis-glow-green: rgba(0, 210, 106, 0.35);
+  --aegis-glow-red: rgba(255, 51, 85, 0.3);
+
+  --aegis-radius-sm: 8px;
+  --aegis-radius-md: 14px;
+  --aegis-radius-lg: 22px;
+
+  --aegis-font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  --aegis-font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+}
+
+/* Base Card Shell with Dynamic Ambient Glow */
+.bot-card.premium-card {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: var(--aegis-white-pure) !important;
+  border: 2px solid var(--aegis-border-soft);
+  border-radius: var(--aegis-radius-lg);
+  font-family: var(--aegis-font-sans);
+  box-shadow: 
+    0 15px 35px -5px rgba(0, 102, 255, 0.08),
+    0 5px 15px rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Universal Black Text Override for Optimal Contrast */
+.bot-card.premium-card,
+.bot-card.premium-card * {
+  color: var(--aegis-black-text) !important;
+}
+
+/* Dynamic Live Pulsing Border when Trading */
+.bot-card.premium-card.active-trading {
+  border-color: var(--aegis-neon-green) !important;
+  box-shadow: 
+    0 0 25px var(--aegis-glow-green),
+    0 15px 35px -5px rgba(0, 210, 106, 0.15);
+  animation: aegis-pulse-border 2s infinite alternate;
+}
+
+@keyframes aegis-pulse-border {
+  0% { box-shadow: 0 0 15px var(--aegis-glow-green); }
+  100% { box-shadow: 0 0 30px var(--aegis-glow-green); }
+}
+
+/* Header Section */
+.bot-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 16px;
+  background-color: var(--aegis-white-pure) !important;
+  border-bottom: 2px dashed var(--aegis-border-soft);
+}
+
+.bot-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title-with-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.title-with-badge h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.premium-badge {
+  font-family: var(--aegis-font-mono);
+  font-size: 0.68rem;
+  font-weight: 900;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, rgba(0, 102, 255, 0.1), rgba(0, 102, 255, 0.2)) !important;
+  border: 2px solid var(--aegis-neon-blue);
+  border-radius: var(--aegis-radius-sm);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px var(--aegis-glow-blue);
+}
+
+.bot-subtitle {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.account-tag {
+  align-self: flex-start;
+  font-family: var(--aegis-font-mono);
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 6px 12px;
+  background-color: var(--aegis-white-pure) !important;
+  border: 2px solid var(--aegis-neon-blue);
+  border-radius: var(--aegis-radius-sm);
+  box-shadow: 0 2px 10px var(--aegis-glow-blue);
+}
+
+/* Interactive Modern Banners */
+.bot-explanation {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notice-highlight,
+.risk-warning-banner {
+  margin: 0;
+  padding: 12px 16px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background-color: var(--aegis-white-pure) !important;
+  border-radius: var(--aegis-radius-md);
+  line-height: 1.5;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.notice-highlight {
+  border: 2px solid var(--aegis-neon-blue);
+  box-shadow: 0 4px 15px var(--aegis-glow-blue);
+}
+
+.risk-warning-banner {
+  border: 2px solid var(--aegis-neon-red);
+  box-shadow: 0 4px 15px var(--aegis-glow-red);
+}
+
+.notice-highlight:hover,
+.risk-warning-banner:hover {
+  transform: translateY(-2px);
+}
+
+/* Parameters & Input Grid */
+.config-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: var(--aegis-white-pure) !important;
+  padding: 14px;
+  border: 2px solid var(--aegis-border-medium);
+  border-radius: var(--aegis-radius-md);
+  transition: all 0.25s ease;
+}
+
+.form-field:focus-within {
+  border-color: var(--aegis-neon-blue);
+  box-shadow: 0 0 15px var(--aegis-glow-blue);
+  transform: translateY(-1px);
+}
+
+.form-field label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.form-field input {
+  background-color: var(--aegis-white-pure) !important;
+  border: 2px solid var(--aegis-border-soft);
+  font-family: var(--aegis-font-mono);
+  font-size: 1.1rem;
+  font-weight: 800;
+  padding: 10px 12px;
+  border-radius: var(--aegis-radius-sm);
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  -webkit-text-fill-color: var(--aegis-black-text) !important;
+  transition: border-color 0.2s ease;
+}
+
+.form-field input:focus {
+  border-color: var(--aegis-neon-blue);
+}
+
+/* Vibrant Metrics Cards Grid */
+.metrics-ribbon {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.metric-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: var(--aegis-white-pure) !important;
+  border: 2px solid var(--aegis-border-medium);
+  border-radius: var(--aegis-radius-md);
+  padding: 14px;
+  min-width: 0;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.metric-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  border-color: var(--aegis-neon-blue);
+}
+
+.metric-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.metric-value {
+  display: block;
+  font-family: var(--aegis-font-mono);
+  font-size: 1.15rem;
+  font-weight: 900;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  padding-left: 10px;
+  border-left: 4px solid var(--aegis-neon-blue);
+}
+
+/* RGB Dynamic Indicator Accents for Parameters */
+.metric-value.status-on {
+  border-left-color: var(--aegis-neon-green);
+}
+
+.metric-value.status-off {
+  border-left-color: var(--aegis-neon-red);
+}
+
+.metric-value.highlight-win {
+  border-left-color: var(--aegis-neon-blue);
+}
+
+/* Action Control Buttons (Neon RGB High-Energy) */
+.controls {
+  margin-top: 20px;
+}
+
+.dual-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.start-btn,
+.stop-btn {
+  width: 100%;
+  padding: 14px 20px;
+  font-family: var(--aegis-font-sans);
+  font-size: 0.95rem;
+  font-weight: 800;
+  border: none;
+  border-radius: var(--aegis-radius-md);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.start-btn:hover:not(:disabled),
+.stop-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+.start-btn:active:not(:disabled),
+.stop-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* Vibrant Green Start Button */
+.start-btn.premium-btn {
+  background: linear-gradient(135deg, #00e676, #00b0ff) !important;
+  box-shadow: 0 6px 20px var(--aegis-glow-green);
+}
+
+/* Vibrant Blue Resume Button */
+.start-btn.resume-btn {
+  background: linear-gradient(135deg, #0066ff, #00d2ff) !important;
+  box-shadow: 0 6px 20px var(--aegis-glow-blue);
+}
+
+.start-btn.new-cycle-btn {
+  background-color: var(--aegis-white-pure) !important;
+  border: 2px solid var(--aegis-border-medium);
+}
+
+/* Vibrant Red Stop Button */
+.stop-btn {
+  background: linear-gradient(135deg, #ff3355, #ff6b00) !important;
+  box-shadow: 0 6px 20px var(--aegis-glow-red);
+}
+
+/* Maintain Crisp White Text on Glowing RGB Solid Buttons */
+.start-btn.premium-btn,
+.start-btn.resume-btn,
+.stop-btn {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.start-btn:disabled,
+.stop-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ==========================================
+   ENGINE TERMINAL CONSOLE STYLING
+   White background, crisp black log text, high-visibility RGB accents
+   ========================================== */
+
+/* Outer Terminal Container */
+.console-wrapper {
+  margin-top: 20px;
+  background-color: #ffffff !important;
+  border: 2px solid #0066ff; /* Vibrant Blue RGB Accent */
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 102, 255, 0.15);
+  overflow: hidden;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.console-wrapper:hover {
+  border-color: #00d26a; /* Pulsing Green RGB Accent on Hover */
+  box-shadow: 0 10px 28px rgba(0, 210, 106, 0.2);
+}
+
+/* Header Bar */
+.console-title {
+  display: flex;
+  align-items: center;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: linear-gradient(90deg, rgba(0, 102, 255, 0.08), #ffffff) !important;
+  padding: 10px 14px;
+  color: #000000 !important;
+  border-bottom: 2px solid #cbd5e1;
+}
+
+/* Indicator Dot inside Header */
+.console-title::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  background-color: #00d26a; /* Green RGB Live Dot */
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(0, 210, 106, 0.8);
+}
+
+/* Main Pre/Log Output Area */
+.logs-console {
+  margin: 0;
+  padding: 14px;
+  height: 160px;
+  overflow-y: auto;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.6;
+  color: #000000 !important;
+  background-color: #ffffff !important;
+  white-space: pre-wrap;
+  word-break: break-word;
+  box-sizing: border-box;
+}
+
+/* Scrollbar Customization */
+.logs-console::-webkit-scrollbar {
+  width: 6px;
+}
+
+.logs-console::-webkit-scrollbar-track {
+  background-color: #ffffff;
+}
+
+.logs-console::-webkit-scrollbar-thumb {
+  background-color: #0066ff; /* Blue RGB Scroll Thumb */
+  border-radius: 4px;
+}
+
+.logs-console::-webkit-scrollbar-thumb:hover {
+  background-color: #ff3355; /* Red RGB Hover Accent */
+}
+
+/* Desktop Responsiveness */
+@media (min-width: 600px) {
+  .logs-console {
+    height: 200px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (min-width: 900px) {
+  .logs-console {
+    height: 240px;
+  }
+}
+
+/* Responsive Breakdown */
+@media (min-width: 600px) {
+  .bot-card.premium-card {
+    padding: 28px;
+  }
+
+  .bot-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .account-tag {
+    align-self: center;
+  }
+
+  .config-grid.dual-field {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .metrics-ribbon {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .dual-controls {
+    flex-direction: row;
+  }
+
+  .dual-controls .start-btn {
+    flex: 1;
+  }
+
+  .logs-console {
+    height: 190px;
+  }
+}
+
+@media (min-width: 900px) {
+  .title-with-badge h2 {
+    font-size: 1.6rem;
+  }
+
+  .metrics-ribbon {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .metric-item {
+    padding: 16px 14px;
+  }
+
+  .logs-console {
+    height: 230px;
+  }
+}

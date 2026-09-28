@@ -6,15 +6,24 @@ const CURRENCY = "USD";
 const PAT_STORAGE_KEY = "deriv_pat_token";
 const PAT_EXPIRY_KEY = "deriv_pat_expiry";
 const ACCOUNT_TYPE_KEY = "deriv_account_type";
+const ACTIVE_BOT_KEY = "deriv_active_bot_id";
 const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 
 export class StakingEngine {
-  constructor({ minStake = 1.00, ratio = 1.5, targetReturnRate = 0.55, standardTargetWins = 25, blockRowLimit = 50 } = {}) {
+  constructor({
+    minStake = 1.00,
+    ratio = 1.5,
+    targetReturnRate = 0.55,
+    standardTargetWins = 25,
+    blockRowLimit = 50,
+    unitTargetProfit = 0.25, // Configurable unit profit target (Default: $0.25)
+  } = {}) {
     this.MIN_STAKE = minStake;
     this.RATIO = ratio;
     this.TARGET_RETURN_RATE = targetReturnRate;
     this.STANDARD_TARGET_WINS = standardTargetWins;
     this.BLOCK_ROW_LIMIT = blockRowLimit;
+    this.UNIT_TARGET_PROFIT = unitTargetProfit;
 
     this.bankedWins = 0;
     this.totalLosses = 0;
@@ -39,7 +48,7 @@ export class StakingEngine {
 
     if (expectedWins > this.bankedWins) {
       const remWins = expectedWins - this.bankedWins;
-      let rawStake = (((expectedWins * 0.45) - subtotal) / remWins) * 1.1;
+      let rawStake = (((expectedWins * this.UNIT_TARGET_PROFIT) - subtotal) / remWins) * 1.1;
 
       if (rawStake >= 8.00) {
         this.stakingModifier = 2;
@@ -48,10 +57,10 @@ export class StakingEngine {
       }
 
       const effectiveDenominator = remWins + this.stakingModifier;
-      finalStake = (((expectedWins * 0.45) - subtotal) / effectiveDenominator) * 1.1;
+      finalStake = (((expectedWins * this.UNIT_TARGET_PROFIT) - subtotal) / effectiveDenominator) * 1.1;
     } else {
       let divisor = this.stakingModifier > 0 ? this.stakingModifier : 1;
-      let rawStake = (((this.bankedWins * 0.45) - subtotal) / divisor) * 1.1;
+      let rawStake = (((this.bankedWins * this.UNIT_TARGET_PROFIT) - subtotal) / divisor) * 1.1;
 
       if (rawStake >= 8.00) {
         this.stakingModifier = 2;
@@ -61,7 +70,7 @@ export class StakingEngine {
         divisor = 1;
       }
 
-      finalStake = (((this.bankedWins * 0.45) - subtotal) / divisor) * 1.1;
+      finalStake = (((this.bankedWins * this.UNIT_TARGET_PROFIT) - subtotal) / divisor) * 1.1;
     }
 
     finalStake = Math.max(this.MIN_STAKE, finalStake);
@@ -85,7 +94,7 @@ export class StakingEngine {
     const rawExpected = this.totalLosses > 0 ? this.totalLosses / this.RATIO : 1.0;
     const expectedWins = Math.max(1, Math.ceil(rawExpected));
     const effectiveWinsTarget = this.bankedWins >= expectedWins ? this.bankedWins : expectedWins;
-    const expectedProfit = effectiveWinsTarget * 0.45;
+    const expectedProfit = effectiveWinsTarget * this.UNIT_TARGET_PROFIT;
 
     let blockEnded = false;
     let blockStatus = "Active";
@@ -136,6 +145,47 @@ export class StakingEngine {
       nextStake,
     };
   }
+
+  reset() {
+    this.bankedWins = 0;
+    this.totalLosses = 0;
+    this.cycleRunningBalance = 0.0;
+    this.pendingWinDebt = 0;
+    this.blockNum = 1;
+    this.posInBlock = 1;
+    this.consecutiveLosses = 0;
+    this.totalTradeCount = 0;
+    this.stakingModifier = 0;
+  }
+
+  exportState() {
+    return {
+      bankedWins: this.bankedWins,
+      totalLosses: this.totalLosses,
+      cycleRunningBalance: this.cycleRunningBalance,
+      pendingWinDebt: this.pendingWinDebt,
+      blockNum: this.blockNum,
+      posInBlock: this.posInBlock,
+      consecutiveLosses: this.consecutiveLosses,
+      totalTradeCount: this.totalTradeCount,
+      stakingModifier: this.stakingModifier,
+      unitTargetProfit: this.UNIT_TARGET_PROFIT,
+    };
+  }
+
+  restoreState(state) {
+    if (!state) return;
+    this.bankedWins = state.bankedWins || 0;
+    this.totalLosses = state.totalLosses || 0;
+    this.cycleRunningBalance = state.cycleRunningBalance || 0.0;
+    this.pendingWinDebt = state.pendingWinDebt || 0;
+    this.blockNum = state.blockNum || 1;
+    this.posInBlock = state.posInBlock || 1;
+    this.consecutiveLosses = state.consecutiveLosses || 0;
+    this.totalTradeCount = state.totalTradeCount || 0;
+    this.stakingModifier = state.stakingModifier || 0;
+    this.UNIT_TARGET_PROFIT = state.unitTargetProfit || this.UNIT_TARGET_PROFIT;
+  }
 }
 
 const TradingContext = createContext();
@@ -151,13 +201,41 @@ export const TradingProvider = ({ children }) => {
   const [error, setError] = useState("");
   const [status, setStatus] = useState("Not connected");
 
+  // Global Active Bot Session Tracking
+  const [activeBotId, setActiveBotIdState] = useState(() => {
+    return localStorage.getItem(ACTIVE_BOT_KEY) || null;
+  });
+
+  const setActiveBotId = (botId) => {
+    if (botId) {
+      localStorage.setItem(ACTIVE_BOT_KEY, botId);
+      setActiveBotIdState(botId);
+    } else {
+      localStorage.removeItem(ACTIVE_BOT_KEY);
+      setActiveBotIdState(null);
+    }
+  };
+
+  // Bot states (1 to 5)
   const [bot1State, setBot1State] = useState({ isTrading: false, logs: [], history: [], contract: null });
   const [bot2State, setBot2State] = useState({ isTrading: false, logs: [], history: [], contract: null });
+  const [bot3State, setBot3State] = useState({ isTrading: false, logs: [], history: [], contract: null });
+  const [bot4State, setBot4State] = useState({ isTrading: false, logs: [], history: [], contract: null });
+  const [bot5State, setBot5State] = useState({ isTrading: false, logs: [], history: [], contract: null });
 
+  // WebSocket refs (1 to 5)
   const wsRef1 = useRef(null);
   const wsRef2 = useRef(null);
-  const engineRef1 = useRef(new StakingEngine({ minStake: 1.00 }));
-  const engineRef2 = useRef(new StakingEngine({ minStake: 1.00 }));
+  const wsRef3 = useRef(null);
+  const wsRef4 = useRef(null);
+  const wsRef5 = useRef(null);
+
+  // Staking engines (1 to 5)
+  const engineRef1 = useRef(new StakingEngine({ minStake: 1.00, unitTargetProfit: 0.45 }));
+  const engineRef2 = useRef(new StakingEngine({ minStake: 1.00, unitTargetProfit: 0.45 }));
+  const engineRef3 = useRef(new StakingEngine({ minStake: 1.00, unitTargetProfit: 0.90 }));
+  const engineRef4 = useRef(new StakingEngine({ minStake: 1.00, unitTargetProfit: 0.45 }));
+  const engineRef5 = useRef(new StakingEngine({ minStake: 1.00, unitTargetProfit: 0.45 }));
 
   const saveTokenWithExpiry = (token) => {
     localStorage.setItem(PAT_STORAGE_KEY, token);
@@ -263,20 +341,54 @@ export const TradingProvider = ({ children }) => {
     clearTokenStorage();
     setIsConnected(false);
     setAccountsList([]);
+    stopAllBots();
+    setStatus("Disconnected");
+  };
+
+  const stopAllBots = () => {
     if (wsRef1.current) wsRef1.current.close();
     if (wsRef2.current) wsRef2.current.close();
+    if (wsRef3.current) wsRef3.current.close();
+    if (wsRef4.current) wsRef4.current.close();
+    if (wsRef5.current) wsRef5.current.close();
+
     setBot1State((prev) => ({ ...prev, isTrading: false }));
     setBot2State((prev) => ({ ...prev, isTrading: false }));
-    setStatus("Disconnected");
+    setBot3State((prev) => ({ ...prev, isTrading: false }));
+    setBot4State((prev) => ({ ...prev, isTrading: false }));
+    setBot5State((prev) => ({ ...prev, isTrading: false }));
+
+    setActiveBotId(null);
   };
 
   return (
     <TradingContext.Provider
       value={{
-        patToken, setPatToken, isConnected, accountType, setAccountType, accountsList, accountData, error, status,
-        handleConnect, handleDisconnect, switchAccount,
+        patToken,
+        setPatToken,
+        isConnected,
+        accountType,
+        setAccountType,
+        accountsList,
+        accountData,
+        error,
+        status,
+        handleConnect,
+        handleDisconnect,
+        switchAccount,
+        activeBotId,
+        setActiveBotId,
+        stopAllBots,
+        // Bot 1 Context (Aegis)
         bot1State, setBot1State, wsRef1, engineRef1,
+        // Bot 2 Context (Nexus)
         bot2State, setBot2State, wsRef2, engineRef2,
+        // Bot 3 Context (Quantum Spike Pro)
+        bot3State, setBot3State, wsRef3, engineRef3,
+        // Bot 4 Context (Titan)
+        bot4State, setBot4State, wsRef4, engineRef4,
+        // Bot 5 Context (Troy)
+        bot5State, setBot5State, wsRef5, engineRef5,
       }}
     >
       {children}

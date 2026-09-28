@@ -7,6 +7,18 @@ export default function MarketAnalysis() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("app_theme") || "dark";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("app_theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
 
   useEffect(() => {
     fetchMarketData();
@@ -99,7 +111,7 @@ export default function MarketAnalysis() {
         <div>
           <h2>Statistical Market Bias & Probability Index</h2>
           <p className="subtitle">
-            Ranked by <strong>Risk Probability (P_loss)</strong>. Dynamic directional classification engine.
+            Powered by real-time WebSocket feeds from <strong>Deriv Synthetic Indices</strong>. Integrating multi-indicator statistical models, volatility profiling, and probabilistic risk scoring to guide automated bot execution strategies.
           </p>
         </div>
         <button onClick={fetchMarketData} className="refresh-btn" disabled={loading}>
