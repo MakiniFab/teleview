@@ -1,7 +1,7 @@
-/* ==========================================
-   AEGIS ENGINE - VIBRANT MODERN DYNAMIC LIGHT
-   White Base, Crystal Black Text & High-Octane RGB
-   ========================================== */
+/* ==========================================================================
+   AEGIS ENGINE - VIBRANT MODERN DYNAMIC LIGHT (FULL COMPLETE STYLESHEET)
+   White Base, Crystal Black Text & High-Octane RGB Accents
+   ========================================================================== */
 
 /* Universal Dynamic Variables */
 .bot-card.premium-card {
@@ -173,6 +173,10 @@
   margin-top: 18px;
 }
 
+.config-grid.dual-field {
+  grid-template-columns: 1fr;
+}
+
 .form-field {
   display: flex;
   flex-direction: column;
@@ -197,7 +201,8 @@
   letter-spacing: 0.05em;
 }
 
-.form-field input {
+.form-field input,
+.form-field select {
   background-color: var(--aegis-white-pure) !important;
   border: 2px solid var(--aegis-border-soft);
   font-family: var(--aegis-font-mono);
@@ -212,8 +217,23 @@
   transition: border-color 0.2s ease;
 }
 
-.form-field input:focus {
+.form-field input:focus,
+.form-field select:focus {
   border-color: var(--aegis-neon-blue);
+}
+
+/* Duration Selector Row */
+.duration-group {
+  display: flex;
+  gap: 8px;
+}
+
+.duration-group input {
+  flex: 1;
+}
+
+.duration-group select {
+  width: 110px;
 }
 
 /* Vibrant Metrics Cards Grid */
@@ -360,10 +380,10 @@
   box-shadow: none;
 }
 
-/* ==========================================
+/* ==========================================================================
    ENGINE TERMINAL CONSOLE STYLING
    White background, crisp black log text, high-visibility RGB accents
-   ========================================== */
+   ========================================================================== */
 
 /* Outer Terminal Container */
 .console-wrapper {
@@ -443,21 +463,10 @@
   background-color: #ff3355; /* Red RGB Hover Accent */
 }
 
-/* Desktop Responsiveness */
-@media (min-width: 600px) {
-  .logs-console {
-    height: 200px;
-    font-size: 0.85rem;
-  }
-}
+/* ==========================================================================
+   Responsive Breakpoints
+   ========================================================================== */
 
-@media (min-width: 900px) {
-  .logs-console {
-    height: 240px;
-  }
-}
-
-/* Responsive Breakdown */
 @media (min-width: 600px) {
   .bot-card.premium-card {
     padding: 28px;
@@ -491,6 +500,7 @@
 
   .logs-console {
     height: 190px;
+    font-size: 0.85rem;
   }
 }
 

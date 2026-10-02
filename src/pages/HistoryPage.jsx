@@ -22,10 +22,6 @@ export default function HistoryPage() {
     localStorage.setItem("app_theme", theme);
   }, [theme]);
 
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
-  };
-
   const {
     activeBotId,
     bot1State,
@@ -40,7 +36,6 @@ export default function HistoryPage() {
     engineRef5,
   } = useTrading();
 
-  // Correctly map states and engine refs to their exact bot identities
   const botMap = useMemo(
     () => ({
       aegis: { state: bot1State, engine: engineRef1, name: "Aegis Matrix Engine" },
@@ -63,7 +58,6 @@ export default function HistoryPage() {
     ]
   );
 
-  // Detect currently executing bot if activeBotId is not set
   const detectedActiveBotId = useMemo(() => {
     if (activeBotId) return activeBotId;
     if (bot1State?.isTrading) return "aegis";
@@ -81,7 +75,6 @@ export default function HistoryPage() {
     bot5State?.isTrading,
   ]);
 
-  // Persistent Selected Bot Filter State (preserves selection on refresh)
   const [selectedBotId, setSelectedBotId] = useState(() => {
     const saved = localStorage.getItem(SELECTED_BOT_STORAGE_KEY);
     return saved && BOT_CONFIGS.some((b) => b.id === saved)
@@ -89,25 +82,69 @@ export default function HistoryPage() {
       : detectedActiveBotId;
   });
 
-  // Save selected bot ID whenever user changes the dropdown
   const handleBotChange = (e) => {
     const newId = e.target.value;
     setSelectedBotId(newId);
     localStorage.setItem(SELECTED_BOT_STORAGE_KEY, newId);
   };
 
-  // Sync selection with running bot if no explicit local preference was stored
-  useEffect(() => {
-    const saved = localStorage.getItem(SELECTED_BOT_STORAGE_KEY);
-    if (!saved && detectedActiveBotId) {
-      setSelectedBotId(detectedActiveBotId);
-    }
-  }, [detectedActiveBotId]);
-
-  // Active bot context references
   const currentBot = botMap[selectedBotId] || botMap["aegis"];
-  const historyData = currentBot.state?.history || [];
-  const engineData = currentBot.engine?.current;
+  const liveHistory = currentBot.state?.history || [];
+  const engineInstance = currentBot.engine?.current;
+
+  // -------------------------------------------------------------
+  // PERSISTENT HISTORY ARCHIVE
+  // Keeps accumulated trade logs across block restarts/resets
+  // -------------------------------------------------------------
+  const [persistentHistory, setPersistentHistory] = useState(() => {
+    const saved = localStorage.getItem(`persistent_history_${selectedBotId}`);
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Re-load stored history whenever selected bot changes
+  useEffect(() => {
+    const saved = localStorage.getItem(`persistent_history_${selectedBotId}`);
+    setPersistentHistory(saved ? JSON.parse(saved) : []);
+  }, [selectedBotId]);
+
+  // Sync incoming live trades to persistent storage without clearing on engine restarts
+  // Sync incoming live trades to persistent storage without duplicate entries
+  useEffect(() => {
+    if (!liveHistory || liveHistory.length === 0) return;
+
+    setPersistentHistory(() => {
+      const mergedMap = new Map();
+
+      // Helper function to create a truly unique signature for a trade row
+      const getTradeKey = (item, idx) => {
+        if (item.id) return String(item.id);
+        if (item.contractId) return String(item.contractId);
+        // Fallback signature combining trade number, block, row, and stake/timestamp
+        return `${item.totalTrade || idx}_B${item.blockNum || 1}_R${item.blockRow || ""}_${item.stakeUsed || 0}_${item.profitLoss || 0}_${item.timestamp || ""}`;
+      };
+
+      // 1. Load currently existing stored history
+      const storedRaw = localStorage.getItem(`persistent_history_${selectedBotId}`);
+      const existingStored = storedRaw ? JSON.parse(storedRaw) : [];
+
+      // 2. Add existing items first
+      existingStored.forEach((item, idx) => {
+        mergedMap.set(getTradeKey(item, idx), item);
+      });
+
+      // 3. Add/overwrite with live items from context
+      liveHistory.forEach((item, idx) => {
+        mergedMap.set(getTradeKey(item, idx), item);
+      });
+
+      const updated = Array.from(mergedMap.values());
+      localStorage.setItem(`persistent_history_${selectedBotId}`, JSON.stringify(updated));
+      return updated;
+    });
+  }, [liveHistory, selectedBotId]);
+
+  // Use persistentHistory as the source for rendered trade data
+  const historyData = persistentHistory;
 
   // Key Aggregation Metrics
   const totalTrades = historyData.length;
@@ -124,6 +161,36 @@ export default function HistoryPage() {
   const winRate =
     totalTrades > 0 ? ((totalWins / totalTrades) * 100).toFixed(1) : "0.0";
 
+  const unitProfit = engineInstance?.UNIT_TARGET_PROFIT || 0.45;
+  const activeExpectedWins =
+    engineInstance?.expectedWins ??
+    engineInstance?.expectedWinsRequired ??
+    engineInstance?.pendingWinDebt ??
+    0;
+
+  const activeBankedWins = engineInstance?.bankedWins ?? 0;
+  const activeModifier = engineInstance?.stakingModifier ?? 0;
+  const remWins = Math.max(1, activeExpectedWins - activeBankedWins);
+  const liveDivisor =
+    activeBankedWins < activeExpectedWins
+      ? remWins + activeModifier
+      : activeModifier > 0
+      ? activeModifier
+      : 1;
+
+  // Clear History only when explicitly triggered by the user button
+  const handleClearHistory = () => {
+    if (window.confirm(`Are you sure you want to clear history for ${currentBot.name}?`)) {
+      if (currentBot.engine?.current?.clearHistory) {
+        currentBot.engine.current.clearHistory();
+      }
+      // Wipes persistent storage key explicitly
+      localStorage.removeItem(`persistent_history_${selectedBotId}`);
+      localStorage.removeItem(`${selectedBotId}_session_data`);
+      setPersistentHistory([]);
+    }
+  };
+
   // CSV Export Functionality
   const exportToCSV = () => {
     if (historyData.length === 0) return;
@@ -135,26 +202,46 @@ export default function HistoryPage() {
       "Stake ($)",
       "Profit/Loss ($)",
       "Running Balance ($)",
+      "Expected Wins",
+      "Divisor/Modifier",
       "Expected Profit ($)",
+      "Formula Used",
       "Status",
       "Next Stake ($)",
     ];
 
     const csvRows = [
       headers.join(","),
-      ...historyData.map((row, index) =>
-        [
+      ...historyData.map((row, index) => {
+        const rowExpWins = row.expectedWins ?? 1;
+        const rowBanked = row.blockWins ?? 0;
+        const rowMod = row.stakingModifier ?? 0;
+        const rowRem = Math.max(1, rowExpWins - rowBanked);
+        const rowDivisor =
+          row.divisor ??
+          (rowBanked < rowExpWins ? rowRem + rowMod : Math.max(1, rowMod));
+
+        const rowTargetWins = rowBanked >= rowExpWins ? rowBanked : rowExpWins;
+        const rowExpProfit = (rowTargetWins * unitProfit).toFixed(2);
+        const rowBal = Number(row.runningBalance || 0).toFixed(2);
+
+        const formulaStr = `"[( $${rowExpProfit} - ($${rowBal}) ) / ${rowDivisor}] * 1.1"`;
+
+        return [
           row.totalTrade || index + 1,
           `"${row.blockNum ? `Block ${row.blockNum} (${row.blockRow})` : row.blockRow || "-"}"`,
           row.outcome || "-",
           Number(row.stakeUsed || 0).toFixed(2),
           Number(row.profitLoss || 0).toFixed(2),
-          Number(row.runningBalance || 0).toFixed(2),
-          Number(row.expectedProfit || 0).toFixed(2),
+          rowBal,
+          rowExpWins,
+          rowDivisor,
+          rowExpProfit,
+          formulaStr,
           `"${row.blockStatus || "Active"}"`,
           Number(row.nextStake || 0).toFixed(2),
-        ].join(",")
-      ),
+        ].join(",");
+      }),
     ];
 
     const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
@@ -168,17 +255,22 @@ export default function HistoryPage() {
 
   return (
     <div className="history-container">
-      {/* Page Header & Selector */}
+      {/* Header Controls */}
       <div className="history-header">
         <div>
           <h1 className="history-title">Trade History & Staking Ledger</h1>
           <p className="history-subtitle">
-            Real-time execution log and block status metrics for active and past bot operations.
+            Real-time execution log with persistent trade archival.
           </p>
         </div>
 
-        {/* Bot Selector Dropdown */}
         <div className="history-controls">
+          <button onClick={exportToCSV} className="export-btn" disabled={historyData.length === 0}>
+            📥 Export CSV
+          </button>
+          <button onClick={handleClearHistory} className="clear-btn" disabled={historyData.length === 0}>
+            🗑️ Clear History
+          </button>
           <div className="bot-selector-wrapper">
             <label htmlFor="bot-select" className="selector-label">
               Select Engine:
@@ -208,7 +300,7 @@ export default function HistoryPage() {
         </div>
       </div>
 
-      {/* Summary KPI Cards */}
+      {/* Metric KPI Cards */}
       <div className="metrics-grid">
         <div className="metric-card">
           <span className="metric-title">Active Bot Status</span>
@@ -242,17 +334,27 @@ export default function HistoryPage() {
             {netProfit >= 0 ? "+" : ""}${netProfit.toFixed(2)}
           </span>
           <span className="metric-subtext">
-            Engine Balance: ${Number(engineData?.cycleRunningBalance || 0).toFixed(2)}
+            Engine Balance: ${Number(engineInstance?.cycleRunningBalance || 0).toFixed(2)}
           </span>
         </div>
 
         <div className="metric-card">
-          <span className="metric-title">Pending Win Debt</span>
+          <span className="metric-title">Target Expected Wins</span>
           <span className="metric-value warning-yellow">
-            {engineData?.pendingWinDebt || 0} Wins
+            {activeExpectedWins} Wins
           </span>
           <span className="metric-subtext">
-            Current Block: #{engineData?.blockNum || 1} (Row {engineData?.posInBlock || 1}/50)
+            Current Block: #{engineInstance?.blockNum || 1} (Row {engineInstance?.posInBlock || 1}/50)
+          </span>
+        </div>
+
+        <div className="metric-card highlight-card">
+          <span className="metric-title">Live Staking Parameters</span>
+          <span className="metric-value text-accent">
+            Divisor: {liveDivisor} | Mod: +{activeModifier}
+          </span>
+          <span className="metric-subtext">
+            Unit Profit Target: ${unitProfit.toFixed(2)}
           </span>
         </div>
       </div>
@@ -269,7 +371,9 @@ export default function HistoryPage() {
                 <th className="p-3 font-semibold text-gray-700">Stake</th>
                 <th className="p-3 font-semibold text-gray-700">P/L</th>
                 <th className="p-3 font-semibold text-gray-700 whitespace-nowrap">Running Bal</th>
-                <th className="p-3 font-semibold text-gray-700 whitespace-nowrap">Expected Profit</th>
+                <th className="p-3 font-semibold text-gray-700 whitespace-nowrap">Exp. Wins</th>
+                <th className="p-3 font-semibold text-gray-700 whitespace-nowrap">Divisor</th>
+                <th className="p-3 font-semibold text-gray-700 whitespace-nowrap">Stake Formula Breakdown</th>
                 <th className="p-3 font-semibold text-gray-700">Status</th>
                 <th className="p-3 font-semibold text-gray-700">Next Stake</th>
               </tr>
@@ -279,31 +383,46 @@ export default function HistoryPage() {
               {historyData.length > 0 ? (
                 historyData
                   .slice()
-                  .reverse() // Display latest trades at the top
+                  .reverse()
                   .map((row, index) => {
                     const isWin = row.outcome === "W" || Number(row.profitLoss) > 0;
                     const formattedStake = Number(row.stakeUsed || 0).toFixed(2);
                     const formattedProfit = Number(row.profitLoss || 0).toFixed(2);
                     const formattedRunningBal = Number(row.runningBalance || 0).toFixed(2);
-                    const formattedExpectedProfit = Number(row.expectedProfit || 0).toFixed(2);
                     const formattedNextStake = Number(row.nextStake || 0).toFixed(2);
+
+                    const rowExpWins = row.expectedWins ?? 1;
+                    const rowBanked = row.blockWins ?? 0;
+                    const rowMod = row.stakingModifier ?? 0;
+                    const rowRemWins = Math.max(1, rowExpWins - rowBanked);
+
+                    const effectiveDivisor =
+                      row.divisor ??
+                      (rowBanked < rowExpWins
+                        ? rowRemWins + rowMod
+                        : rowMod > 0
+                        ? rowMod
+                        : 1);
+
+                    const effectiveTargetWins = rowBanked >= rowExpWins ? rowBanked : rowExpWins;
+                    const targetProfit = Number((effectiveTargetWins * unitProfit).toFixed(2));
+                    const runningBalNum = Number(row.runningBalance || 0);
+                    const recoveryGap = Number((targetProfit - runningBalNum).toFixed(2));
+
+                    const formulaDisplay = `[($${targetProfit} Target - ($${formattedRunningBal} Bal)) / ${effectiveDivisor}] × 1.1`;
+                    const calculationResult = `[ $${recoveryGap} / ${effectiveDivisor} ] × 1.1 = $${formattedNextStake}`;
 
                     return (
                       <tr key={index} className="table-body-row">
-                        {/* 1. # (Trade Number) */}
                         <td className="p-3 font-medium text-gray-800">
                           {row.totalTrade || historyData.length - index}
                         </td>
-
-                        {/* 2. Block/Row */}
                         <td className="p-3 text-gray-600">
                           <span className="block-tag">
                             B{row.blockNum || 1}
                           </span>{" "}
                           <span className="row-tag">{row.blockRow || "1/50"}</span>
                         </td>
-
-                        {/* 3. Outcome */}
                         <td className="p-3">
                           <span
                             className={`outcome-badge ${
@@ -313,13 +432,9 @@ export default function HistoryPage() {
                             {row.outcome || (isWin ? "W" : "L")}
                           </span>
                         </td>
-
-                        {/* 4. Stake */}
                         <td className="p-3 font-mono text-gray-800">
                           ${formattedStake}
                         </td>
-
-                        {/* 5. P/L */}
                         <td
                           className={`p-3 font-mono font-semibold ${
                             isWin ? "text-win" : "text-loss"
@@ -327,18 +442,21 @@ export default function HistoryPage() {
                         >
                           {isWin ? "+" : ""}${formattedProfit}
                         </td>
-
-                        {/* 6. Running Bal */}
                         <td className="p-3 font-mono text-gray-700 whitespace-nowrap">
                           ${formattedRunningBal}
                         </td>
-
-                        {/* 7. Expected Profit */}
-                        <td className="p-3 font-mono text-gray-700 whitespace-nowrap">
-                          ${formattedExpectedProfit}
+                        <td className="p-3 font-mono text-gray-700 whitespace-nowrap text-center font-semibold">
+                          {rowExpWins}
                         </td>
-
-                        {/* 8. Status */}
+                        <td className="p-3 font-mono text-center font-semibold text-accent whitespace-nowrap">
+                          {effectiveDivisor} {rowMod > 0 ? `(+${rowMod} Mod)` : ""}
+                        </td>
+                        <td className="p-3 font-mono text-xs text-gray-700 whitespace-nowrap">
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-gray-900">{formulaDisplay}</span>
+                            <span className="text-gray-500 text-[11px]">{calculationResult}</span>
+                          </div>
+                        </td>
                         <td className="p-3">
                           <span
                             className={`status-badge ${
@@ -352,8 +470,6 @@ export default function HistoryPage() {
                             {row.blockStatus || "Active"}
                           </span>
                         </td>
-
-                        {/* 9. Next Stake */}
                         <td className="p-3 font-mono font-bold text-accent">
                           ${formattedNextStake}
                         </td>
@@ -362,12 +478,12 @@ export default function HistoryPage() {
                   })
               ) : (
                 <tr>
-                  <td colSpan="9" className="empty-table-cell">
+                  <td colSpan="11" className="empty-table-cell">
                     <div className="empty-state">
                       <span className="empty-icon">📊</span>
                       <p className="empty-title">No Trade History Logged</p>
                       <p className="empty-description">
-                        Start trading with {currentBot.name} to see real-time block progressions and dynamic stake adjustments here.
+                        Start trading with {currentBot.name} to view continuous trade logs. History remains preserved across block resets until manually cleared.
                       </p>
                     </div>
                   </td>

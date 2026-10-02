@@ -17,15 +17,26 @@ html[data-theme="dark"] {
   --text-muted: #64748b;
 
   --border-color: #262f45;
-  --border-active: #3b82f6;
+  --border-active: #10b981;
 
   --accent-primary: #3b82f6;
   --accent-glow: rgba(59, 130, 246, 0.25);
   
-  --badge-active-bg: rgba(16, 185, 129, 0.15);
-  --badge-active-text: #10b981;
-  --badge-locked-bg: rgba(239, 68, 68, 0.15);
-  --badge-locked-text: #ef4444;
+  /* Green & Red Theme System */
+  --trade-green: #10b981;
+  --trade-green-hover: #059669;
+  --trade-green-bg: rgba(16, 185, 129, 0.12);
+  --trade-green-border: rgba(16, 185, 129, 0.35);
+
+  --trade-red: #ef4444;
+  --trade-red-hover: #dc2626;
+  --trade-red-bg: rgba(239, 68, 68, 0.12);
+  --trade-red-border: rgba(239, 68, 68, 0.35);
+
+  --badge-active-bg: var(--trade-green-bg);
+  --badge-active-text: var(--trade-green);
+  --badge-locked-bg: var(--trade-red-bg);
+  --badge-locked-text: var(--trade-red);
 
   --warning-border: #eab308;
   --warning-text: #fde047;
@@ -40,7 +51,7 @@ html[data-theme="light"] {
   --bg-card: #ffffff;
   --bg-sidebar: #f1f5f9;
   --bg-hover: #e2e8f0;
-  --bg-active: #cbd5e1;
+  --bg-active: #e2e8f0;
   --bg-disclaimer: #fffbeeb3;
 
   --text-primary: #0f172a;
@@ -48,15 +59,26 @@ html[data-theme="light"] {
   --text-muted: #64748b;
 
   --border-color: #e2e8f0;
-  --border-active: #2563eb;
+  --border-active: #059669;
 
   --accent-primary: #2563eb;
-  --accent-glow: rgba(37, 99, 235, 0.15);
+  --accent-glow: rgba(16, 185, 129, 0.15);
 
-  --badge-active-bg: #d1fae5;
-  --badge-active-text: #047857;
-  --badge-locked-bg: #fee2e2;
-  --badge-locked-text: #b91c1c;
+  /* Green & Red Theme System */
+  --trade-green: #059669;
+  --trade-green-hover: #047857;
+  --trade-green-bg: #d1fae5;
+  --trade-green-border: rgba(5, 150, 105, 0.35);
+
+  --trade-red: #dc2626;
+  --trade-red-hover: #b91c1c;
+  --trade-red-bg: #fee2e2;
+  --trade-red-border: rgba(220, 38, 38, 0.35);
+
+  --badge-active-bg: var(--trade-green-bg);
+  --badge-active-text: var(--trade-green);
+  --badge-locked-bg: var(--trade-red-bg);
+  --badge-locked-text: var(--trade-red);
 
   --warning-border: #d97706;
   --warning-text: #92400e;
@@ -86,6 +108,7 @@ html[data-theme="light"] {
 .bots-page-header {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
+  border-left: 4px solid var(--trade-green);
   border-radius: 10px;
   padding: 0.85rem;
   margin-bottom: 0.85rem;
@@ -145,7 +168,7 @@ html[data-theme="light"] {
 /* Vertical List Layout for Mobile */
 .bot-menu-list {
   display: flex;
-  flex-direction: column; /* Displays all items vertically */
+  flex-direction: column;
   gap: 0.45rem;
   width: 100%;
 }
@@ -168,19 +191,30 @@ html[data-theme="light"] {
 
 .bot-menu-item:hover:not(:disabled) {
   background: var(--bg-hover);
-  border-color: var(--accent-primary);
+  border-color: var(--trade-green-border);
 }
 
 .bot-menu-item.active {
-  background: var(--bg-active);
-  border-color: var(--border-active);
-  box-shadow: 0 0 0 1px var(--border-active), var(--accent-glow);
+  background: var(--trade-green-bg);
+  border-color: var(--trade-green);
+  box-shadow: 0 0 0 1px var(--trade-green), 0 0 10px rgba(16, 185, 129, 0.2);
 }
 
+.bot-menu-item.active .bot-name {
+  color: var(--trade-green);
+}
+
+/* Locked / Running Disables State with Red Highlights */
+.bot-menu-item.disabled-running,
 .bot-menu-item:disabled {
-  opacity: 0.55;
+  opacity: 0.6;
   cursor: not-allowed;
-  filter: grayscale(40%);
+  border-color: var(--trade-red-border);
+  background-color: var(--trade-red-bg);
+}
+
+.bot-menu-item.disabled-running .bot-name {
+  color: var(--trade-red);
 }
 
 .menu-item-info {
@@ -198,6 +232,7 @@ html[data-theme="light"] {
 
 .lock-icon {
   font-size: 0.75rem;
+  color: var(--trade-red);
 }
 
 /* Badges */
@@ -213,11 +248,13 @@ html[data-theme="light"] {
 .badge-active {
   background: var(--badge-active-bg);
   color: var(--badge-active-text);
+  border: 1px solid var(--trade-green-border);
 }
 
 .badge-locked {
   background: var(--badge-locked-bg);
   color: var(--badge-locked-text);
+  border: 1px solid var(--trade-red-border);
 }
 
 /* Main Content Area */
@@ -240,16 +277,19 @@ html[data-theme="light"] {
   text-align: center;
   padding: 2.5rem 0.85rem;
   color: var(--text-secondary);
+  background: var(--trade-red-bg);
+  border: 1px dashed var(--trade-red-border);
+  border-radius: 8px;
 }
 
 .locked-placeholder h2 {
   font-size: 1.1rem;
   margin-bottom: 0.4rem;
-  color: var(--badge-locked-text);
+  color: var(--trade-red);
 }
 
 /* ==========================================
-   DESKTOP & LARGER SCREENS (Responsive Scaling)
+   DESKTOP & LARGER SCREENS
    ========================================== */
 
 @media (min-width: 768px) {

@@ -80,23 +80,63 @@ body {
   width: 100%;
 }
 
-/* Brand Logo */
+/* Brand Logo Group with Animated Background Image */
 .brand-logo-group {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
   text-decoration: none;
-  color: var(--trade-white);
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--trade-panel-border);
+  
+  /* Set image as background */
+  background-image: url("/loggos.png");
+  background-repeat: repeat-x;
+  background-size: auto 100%;
+  
+  /* Continuous left-to-right infinite scroll animation */
+  animation: scrollBgRight 20s linear infinite;
+  
+  /* Glassmorphism overlay so logo text remains sharp and legible */
+  position: relative;
+  overflow: hidden;
 }
 
+/* Semi-transparent dark overlay to keep text high-contrast over moving background */
+.brand-logo-group::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(10, 14, 23, 0.65); /* Adjust opacity if needed */
+  z-index: 1;
+}
+
+/* Ensure brand text sits above the background animation */
 .brand-name {
-  font-size: 1.25rem;
+  position: relative;
+  z-index: 2;
+  font-size: 1.35rem;
   font-weight: 800;
   letter-spacing: -0.5px;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .brand-accent {
-  color: var(--trade-blue);
+  color: var(--trade-green);
+}
+
+/* Left-to-Right Scrolling Keyframe */
+@keyframes scrollBgRight {
+  0% {
+    background-position: 0% 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
 }
 
 /* Scrollable Horizontal Navigation for Mobile */

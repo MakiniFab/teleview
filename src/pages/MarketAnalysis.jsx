@@ -1,65 +1,49 @@
 import React, { useState, useEffect } from "react";
 import "./MarketAnalysis.css";
 
-const API_ENDPOINT = "https://back-analysis.onrender.com/api/metrics";
+const METRICS_ENDPOINT = "https://back-analysis.onrender.com/api/metrics";
 
 export default function MarketAnalysis() {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [metricsData, setMetricsData] = useState([]);
+  const [loadingMetrics, setLoadingMetrics] = useState(true);
   const [error, setError] = useState(null);
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem("app_theme") || "dark";
-  });
+  const [selectedAsset, setSelectedAsset] = useState("Volatility 100 Index (R_100)");
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("app_theme", theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
-  };
-
-  useEffect(() => {
-    fetchMarketData();
+    fetchMarketMetrics();
   }, []);
 
-  const fetchMarketData = async () => {
-    setLoading(true);
+  const fetchMarketMetrics = async () => {
+    setLoadingMetrics(true);
     setError(null);
-
     try {
-      const response = await fetch(API_ENDPOINT);
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
+      const response = await fetch(METRICS_ENDPOINT);
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       const rawJson = await response.json();
-      const processedData = processAndSortMarketData(rawJson);
-      setData(processedData);
+      const processed = processMarketData(rawJson);
+      setMetricsData(processed);
+      if (processed.length > 0) setSelectedAsset(processed[0].symbol);
     } catch (err) {
-      console.error("Failed to fetch market metrics from Render:", err);
-      setError("Unable to connect to analysis server. Displaying fallback stats.");
-      setData(getFallbackData());
+      console.error("Failed to fetch metrics, using fallback stats:", err);
+      setError("Server connection offline. Displaying fallback metrics.");
+      const fallback = getFallbackData();
+      setMetricsData(fallback);
+      setSelectedAsset(fallback[0].symbol);
     } finally {
-      setLoading(false);
+      setLoadingMetrics(false);
     }
   };
 
-  const processAndSortMarketData = (list) => {
+  const processMarketData = (list) => {
     const rawList = Array.isArray(list) ? list : [];
-
-    const processed = rawList.map((item) => {
+    return rawList.map((item) => {
       const symbol = item.symbol || item.code || "Unknown Asset";
       const wins = Number(item.wins || 0);
       const losses = Number(item.losses || 0);
       const total = Number(item.total || wins + losses) || 1;
-
-      // Risk Probability (P_loss) calculation
       const pLoss = Number(((losses / total) * 100).toFixed(2));
       const pWin = Number((100 - pLoss).toFixed(2));
 
-      // Determine Market Bias based on Risk Probability
       let bias = "NEUTRAL";
       let biasClass = "bias-neutral";
 
@@ -78,64 +62,42 @@ export default function MarketAnalysis() {
       }
 
       return { symbol, total, pLoss, pWin, bias, biasClass };
-    });
-
-    // Sort descending by Risk Probability (P_loss)
-    return processed.sort((a, b) => b.pLoss - a.pLoss);
+    }).sort((a, b) => b.pLoss - a.pLoss);
   };
 
   const getFallbackData = () => {
     const fallbackList = [
       { symbol: "Volatility 100 Index (R_100)", losses: 19, wins: 11, total: 30 },
-      { symbol: "Volatility 10 Index (R_10)", losses: 18, wins: 12, total: 30 },
+      { symbol: "Volatility 100 (1s) Index (1HZ100V)", losses: 17, wins: 16, total: 33 },
       { symbol: "Volatility 25 Index (R_25)", losses: 18, wins: 12, total: 30 },
-      { symbol: "Volatility 75 Index (R_75)", losses: 17, wins: 13, total: 30 },
+      { symbol: "Volatility 75 (1s) Index (1HZ75V)", losses: 17, wins: 13, total: 30 },
       { symbol: "Volatility 25 (1s) Index (1HZ25V)", losses: 17, wins: 13, total: 30 },
-      { symbol: "Volatility 100 (1s) Index (1HZ100V)", losses: 15, wins: 15, total: 30 },
       { symbol: "Volatility 50 Index (R_50)", losses: 14, wins: 16, total: 30 },
       { symbol: "Volatility 10 (1s) Index (1HZ10V)", losses: 14, wins: 16, total: 30 },
-      { symbol: "Volatility 75 (1s) Index (1HZ75V)", losses: 12, wins: 18, total: 30 },
+      { symbol: "Volatility 10 Index (R_10)", losses: 18, wins: 12, total: 30 },
+      { symbol: "Volatility 75 Index (R_75)", losses: 17, wins: 13, total: 30 },
       { symbol: "Volatility 50 (1s) Index (1HZ50V)", losses: 11, wins: 19, total: 30 },
     ];
-    return processAndSortMarketData(fallbackList);
+    return processMarketData(fallbackList);
   };
-
-  const totalSamplesSum = data.reduce((acc, curr) => acc + curr.total, 0);
-  const avgRiskProb = data.length
-    ? (data.reduce((acc, curr) => acc + curr.pLoss, 0) / data.length).toFixed(1)
-    : "0.0";
 
   return (
     <div className="market-analysis-container">
       <div className="analysis-header">
         <div>
-          <h2>Statistical Market Bias & Probability Index</h2>
+          <h2>Risk Probability Index & Market Bias</h2>
           <p className="subtitle">
-            Powered by real-time WebSocket feeds from <strong>Deriv Synthetic Indices</strong>. Integrating multi-indicator statistical models, volatility profiling, and probabilistic risk scoring to guide automated bot execution strategies.
+            Visual risk probability metrics and market direction analysis across synthetic volatility indices.
           </p>
         </div>
-        <button onClick={fetchMarketData} className="refresh-btn" disabled={loading}>
-          {loading ? "Syncing..." : "Sync Live Stats"}
+        <button onClick={fetchMarketMetrics} className="refresh-btn" disabled={loadingMetrics}>
+          {loadingMetrics ? "Syncing..." : "Sync Live Metrics"}
         </button>
       </div>
 
       {error && <div className="error-banner">{error}</div>}
 
-      <div className="stats-cards-grid">
-        <div className="stat-card">
-          <span className="stat-label">Tracked Assets</span>
-          <span className="stat-value">{data.length}</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-label">Total Backtest Samples</span>
-          <span className="stat-value">{totalSamplesSum.toLocaleString()}</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-label">Avg Risk Probability</span>
-          <span className="stat-value">{avgRiskProb}%</span>
-        </div>
-      </div>
-
+      {/* Probability Visual Bar Chart Table */}
       <div className="table-wrapper">
         <table className="analysis-table">
           <thead>
@@ -144,40 +106,41 @@ export default function MarketAnalysis() {
               <th>Volatility Index</th>
               <th>Win Ratio (P_win)</th>
               <th>Risk Probability (P_loss)</th>
-              <th>Risk Visualizer</th>
-              <th>Market Bias / Direction</th>
+              <th>Win vs Risk Distribution Chart</th>
+              <th>Bias</th>
             </tr>
           </thead>
           <tbody>
-            {data.length > 0 ? (
-              data.map((item, index) => (
-                <tr key={item.symbol || index} className={index % 2 === 0 ? "even-row" : ""}>
-                  <td className="rank-cell">#{index + 1}</td>
-                  <td className="symbol-cell">{item.symbol}</td>
-                  <td className="pwin-cell">{item.pWin.toFixed(2)}%</td>
-                  <td className="ploss-cell">{item.pLoss.toFixed(2)}%</td>
-                  <td className="visual-bar-cell">
-                    <div className="risk-bar-track">
-                      <div
-                        className="risk-bar-fill"
-                        style={{ width: `${Math.min(100, Math.max(0, item.pLoss))}%` }}
-                      ></div>
-                    </div>
-                  </td>
-                  <td>
-                    <span className={`bias-badge ${item.biasClass}`}>
-                      {item.bias}
-                    </span>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="6" className="no-data-cell">
-                  {loading ? "Fetching live market metrics..." : "No market metrics available."}
+            {metricsData.map((item, index) => (
+              <tr
+                key={item.symbol || index}
+                className={selectedAsset === item.symbol ? "selected-row" : ""}
+                onClick={() => setSelectedAsset(item.symbol)}
+              >
+                <td className="rank-cell">#{index + 1}</td>
+                <td className="symbol-cell">{item.symbol}</td>
+                <td className="pwin-cell">{item.pWin.toFixed(2)}%</td>
+                <td className="ploss-cell">{item.pLoss.toFixed(2)}%</td>
+                <td className="chart-bar-cell">
+                  {/* Inline visual distribution bar */}
+                  <div className="bar-container">
+                    <div
+                      className="bar-win"
+                      style={{ width: `${item.pWin}%` }}
+                      title={`Win Rate: ${item.pWin}%`}
+                    />
+                    <div
+                      className="bar-loss"
+                      style={{ width: `${item.pLoss}%` }}
+                      title={`Risk Loss: ${item.pLoss}%`}
+                    />
+                  </div>
+                </td>
+                <td>
+                  <span className={`bias-badge ${item.biasClass}`}>{item.bias}</span>
                 </td>
               </tr>
-            )}
+            ))}
           </tbody>
         </table>
       </div>

@@ -1,499 +1,325 @@
-/* ==========================================================================
-   HomePage.css — Modern Dynamic Trading Theme (Mobile-First)
-   ========================================================================== */
-
-/* --------------------------------------------------------------------------
-   1. Theme Variables & Color Palettes
-   -------------------------------------------------------------------------- */
+/* Base Variables & Theme Definitions */
 :root {
-  /* Default Dark Theme (Institutional / Sleek) */
-  --bg-primary: #0b0e14;
-  --bg-surface: #131722;
-  --bg-card: #1e222d;
-  --bg-card-hover: #2a2e39;
+  /* Common Palette */
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   
-  --border-color: #2a2e39;
-  --border-focus: #2962ff;
-
-  --text-primary: #f0f3fa;
-  --text-secondary: #9db2c6;
-  --text-muted: #606877;
-
-  --accent-primary: #2962ff;
-  --accent-hover: #1e53e5;
-  --accent-glow: rgba(41, 98, 255, 0.25);
-
-  --success-color: #089981;
-  --success-bg: rgba(8, 153, 129, 0.12);
-  --error-color: #f23645;
-  --error-bg: rgba(242, 54, 69, 0.12);
+  /* Trading Signal Colors (Consistent Across Themes) */
+  --trade-green: #10b981;
+  --trade-green-hover: #059669;
+  --trade-green-bg: rgba(16, 185, 129, 0.12);
+  --trade-green-border: rgba(16, 185, 129, 0.3);
   
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
-  --glow-brand: 0 0 20px rgba(41, 98, 255, 0.15);
+  --trade-red: #ef4444;
+  --trade-red-hover: #dc2626;
+  --trade-red-bg: rgba(239, 68, 68, 0.12);
+  --trade-red-border: rgba(239, 68, 68, 0.3);
 
-  /* Dynamic Base Sizing for Scaling */
-  --font-base: 0.85rem;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Light Theme Defaults */
+  --bg-color: #f8fafc;
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --input-bg: #f1f5f9;
+  --input-border: #cbd5e1;
+  --accent-color: var(--trade-green);
+  --accent-hover: var(--trade-green-hover);
 }
 
-/* Light Theme Overrides */
-[data-theme="light"] {
-  --bg-primary: #f8f9fd;
-  --bg-surface: #ffffff;
-  --bg-card: #ffffff;
-  --bg-card-hover: #f1f3f9;
-
-  --border-color: #e0e3eb;
-  --border-focus: #2962ff;
-
-  --text-primary: #131722;
-  --text-secondary: #4a5568;
-  --text-muted: #848e9c;
-
-  --accent-primary: #2962ff;
-  --accent-hover: #1e53e5;
-  --accent-glow: rgba(41, 98, 255, 0.15);
-
-  --success-color: #089981;
-  --success-bg: rgba(8, 153, 129, 0.08);
-  --error-color: #f23645;
-  --error-bg: rgba(242, 54, 69, 0.08);
-
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.06);
-  --glow-brand: 0 0 20px rgba(41, 98, 255, 0.08);
+/* Dark Theme Variables */
+[data-theme="dark"] {
+  --bg-color: #0b0f17;
+  --card-bg: #151c28;
+  --card-border: #1e293b;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --input-bg: #0f172a;
+  --input-border: #334155;
+  --accent-color: var(--trade-green);
+  --accent-hover: var(--trade-green-hover);
 }
 
-/* --------------------------------------------------------------------------
-   2. Global Mobile Base Styles
-   -------------------------------------------------------------------------- */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
+/* Global Styles */
 body {
-  background-color: var(--bg-primary);
+  background-color: var(--bg-color);
   color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  font-size: var(--font-base);
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
+  font-family: var(--font-family);
+  margin: 0;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .home-container {
-  min-height: 100vh;
-  padding: 1rem 0.75rem;
   max-width: 1200px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  padding: 2rem 1rem;
 }
 
-/* --------------------------------------------------------------------------
-   3. Hero Banner & Professional Branding Section
-   -------------------------------------------------------------------------- */
+/* Hero Section */
 .hero-card {
-  background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-card) 100%);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 1.25rem 1rem;
-  box-shadow: var(--shadow-sm);
-  position: relative;
-  overflow: hidden;
-}
-
-.hero-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent-primary), transparent);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 .brand-badge {
-  display: inline-flex;
-  align-items: center;
-  margin-bottom: 0.5rem;
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: var(--trade-green-bg);
+  border: 1px solid var(--trade-green-border);
+  border-radius: 20px;
 }
 
 .logo-text {
   font-weight: 700;
-  font-size: 0.9rem;
-  letter-spacing: 0.5px;
   color: var(--text-primary);
-  text-transform: uppercase;
 }
 
 .logo-accent {
-  color: var(--accent-primary);
-  font-weight: 900;
-  padding: 0 1px;
+  color: var(--trade-green);
 }
 
 .hero-card h1 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  line-height: 1.2;
-  color: var(--text-primary);
-  margin-bottom: 0.75rem;
-  letter-spacing: -0.3px;
+  margin-top: 1.5rem;
+  font-size: 2.2rem;
+  background: linear-gradient(135deg, var(--trade-green), var(--trade-red));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .hero-subtitle-container {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  margin-top: 1rem;
 }
 
 .hero-subtitle {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-}
-
-.hero-subtitle strong {
-  color: var(--accent-primary);
+  font-size: 1.1rem;
+  color: var(--text-primary);
 }
 
 .hero-description {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  line-height: 1.5;
-  border-left: 2px solid var(--accent-primary);
-  padding-left: 0.75rem;
-  margin-top: 0.25rem;
-  background: var(--accent-glow);
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--text-secondary);
+  line-height: 1.6;
 }
 
-/* --------------------------------------------------------------------------
-   4. Layout Grid Structure
-   -------------------------------------------------------------------------- */
+/* Layout Grid */
 .grid-layout {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem;
+  gap: 2rem;
 }
 
-/* --------------------------------------------------------------------------
-   5. Authentication & Forms
-   -------------------------------------------------------------------------- */
-.auth-card, 
-.dashboard-card {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 1.25rem 1rem;
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+@media (min-width: 768px) {
+  .grid-layout {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
-.auth-card h2, 
-.dashboard-card h2 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-primary);
+/* Cards Base */
+.auth-card, .dashboard-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 .hint {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  margin-top: -0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
 }
 
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-}
-
+/* Account Toggle Buttons */
 .account-type-toggle {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.25rem;
-  background-color: var(--bg-primary);
-  padding: 3px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-color);
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  background: var(--input-bg);
+  padding: 4px;
+  border-radius: 8px;
 }
 
 .toggle-btn {
-  background: transparent;
+  flex: 1;
+  padding: 0.6rem;
   border: none;
-  color: var(--text-muted);
-  padding: 0.5rem 0.25rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  border-radius: calc(var(--radius-sm) - 2px);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
+/* Red / Green Indicators for Account Toggles */
 .toggle-btn.active {
-  background-color: var(--bg-card);
-  color: var(--accent-primary);
-  box-shadow: var(--shadow-sm);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* Demo account active state -> Green accent */
+.account-type-toggle .toggle-btn:first-child.active {
+  color: var(--trade-green);
+  border: 1px solid var(--trade-green-border);
+}
+
+/* Real account active state -> Red accent */
+.account-type-toggle .toggle-btn:last-child.active {
+  color: var(--trade-red);
+  border: 1px solid var(--trade-red-border);
+}
+
+/* Form Controls */
 .input-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 .token-input {
-  width: 100%;
-  background-color: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  padding: 0.65rem 0.75rem;
+  padding: 0.8rem 1rem;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
   color: var(--text-primary);
-  font-size: 0.8rem;
   outline: none;
-  transition: border-color var(--transition-fast);
+  transition: border-color 0.2s ease;
 }
 
 .token-input:focus {
-  border-color: var(--border-focus);
+  border-color: var(--trade-green);
 }
 
+/* Primary Call To Action Button (Green Action) */
 .connect-btn {
-  width: 100%;
-  background-color: var(--accent-primary);
+  padding: 0.8rem 1.2rem;
+  background: var(--trade-green);
   color: #ffffff;
   border: none;
-  border-radius: var(--radius-sm);
-  padding: 0.65rem 1rem;
-  font-size: 0.8rem;
+  border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color var(--transition-fast);
+  transition: background-color 0.2s ease;
 }
 
 .connect-btn:hover {
-  background-color: var(--accent-hover);
+  background: var(--trade-green-hover);
 }
 
-/* --------------------------------------------------------------------------
-   6. Status, Banners & PAT Guide
-   -------------------------------------------------------------------------- */
+/* Status & Connection Alerts */
 .connected-panel {
-  padding: 0.75rem;
-  background-color: var(--success-bg);
-  border: 1px solid var(--success-color);
-  border-radius: var(--radius-sm);
+  padding: 1rem;
+  background: var(--trade-green-bg);
+  border: 1px solid var(--trade-green-border);
+  border-radius: 8px;
+  margin-bottom: 1rem;
 }
 
-.status-indicator {
+.status-indicator.online {
+  color: var(--trade-green);
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--success-color);
 }
 
-.dot {
+.status-indicator .dot {
   width: 8px;
   height: 8px;
-  background-color: var(--success-color);
+  background-color: var(--trade-green);
   border-radius: 50%;
-  box-shadow: 0 0 8px var(--success-color);
+  box-shadow: 0 0 8px var(--trade-green);
 }
 
 .error-banner {
-  background-color: var(--error-bg);
-  border: 1px solid var(--error-color);
-  color: var(--error-color);
-  padding: 0.5rem 0.75rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.75rem;
+  background: var(--trade-red-bg);
+  border: 1px solid var(--trade-red-border);
+  color: var(--trade-red);
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  font-size: 0.9rem;
 }
 
 .status-banner {
-  background-color: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  padding: 0.5rem 0.75rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.75rem;
+  background: var(--trade-green-bg);
+  border: 1px solid var(--trade-green-border);
+  color: var(--trade-green);
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  font-size: 0.9rem;
 }
 
+/* PAT Instructions Guide */
 .pat-guide {
-  border-top: 1px solid var(--border-color);
-  padding-top: 0.85rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.pat-guide h3 {
-  font-size: 0.85rem;
-  color: var(--text-primary);
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--card-border);
 }
 
 .pat-guide ol {
-  padding-left: 1rem;
+  padding-left: 1.2rem;
   color: var(--text-secondary);
-  font-size: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
 }
 
-.pat-guide code {
-  background-color: var(--bg-primary);
-  padding: 1px 4px;
-  border-radius: 3px;
-  font-family: monospace;
-  color: var(--accent-primary);
+.pat-guide li {
+  margin-bottom: 0.5rem;
 }
 
 .deriv-link {
-  display: inline-block;
-  color: var(--accent-primary);
-  font-size: 0.75rem;
-  font-weight: 600;
+  color: var(--trade-green);
   text-decoration: none;
-  margin-top: 0.25rem;
+  font-weight: 600;
 }
 
 .deriv-link:hover {
   text-decoration: underline;
 }
 
-/* --------------------------------------------------------------------------
-   7. Account Details Metrics
-   -------------------------------------------------------------------------- */
+/* Dashboard Metric Boxes */
 .account-details {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
 .metric-box {
-  background-color: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  padding: 0.65rem 0.85rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 1rem;
+  background: var(--input-bg);
+  border-radius: 8px;
+  border-left: 4px solid var(--trade-green);
 }
 
 .metric-box .label {
-  font-size: 0.75rem;
-  color: var(--text-muted);
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .metric-box .value {
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-primary);
 }
 
 .metric-box .value.highlighted {
-  color: var(--success-color);
-  font-weight: 700;
+  color: var(--trade-green);
+  font-size: 1.2rem;
 }
 
-.empty-state {
-  text-align: center;
-  padding: 1.5rem 0.5rem;
-  color: var(--text-muted);
-  font-size: 0.8rem;
+/* Registration Call-To-Action (Non-Connected State) */
+.register-prompt {
+  background: linear-gradient(180deg, var(--card-bg) 0%, var(--trade-green-bg) 100%);
+  border: 1px solid var(--trade-green-border);
+  border-radius: 12px;
 }
 
-.empty-icon {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-}
-
-/* --------------------------------------------------------------------------
-   8. Responsive Scales (Tablets & Desktops)
-   -------------------------------------------------------------------------- */
-
-/* Medium Devices (Tablets, 640px and up) */
-@media (min-width: 640px) {
-  :root {
-    --font-base: 0.95rem;
-  }
-
-  .home-container {
-    padding: 1.5rem 1.25rem;
-    gap: 1.25rem;
-  }
-
-  .hero-card {
-    padding: 1.75rem 1.5rem;
-  }
-
-  .hero-card h1 {
-    font-size: 1.6rem;
-  }
-
-  .hero-subtitle {
-    font-size: 0.95rem;
-  }
-
-  .hero-description {
-    font-size: 0.85rem;
-    padding-left: 1rem;
-  }
-
-  .input-group {
-    flex-direction: row;
-  }
-
-  .connect-btn {
-    width: auto;
-    white-space: nowrap;
-  }
-}
-
-/* Large Devices (Desktops, 1024px and up) */
-@media (min-width: 1024px) {
-  :root {
-    --font-base: 1rem;
-  }
-
-  .home-container {
-    padding: 2.5rem 1.5rem;
-    gap: 1.5rem;
-  }
-
-  .hero-card {
-    padding: 2.25rem 2rem;
-  }
-
-  .hero-card h1 {
-    font-size: 2rem;
-  }
-
-  .grid-layout {
-    grid-template-columns: 1.2fr 0.8fr;
-    align-items: start;
-    gap: 1.5rem;
-  }
-
-  .auth-card, 
-  .dashboard-card {
-    padding: 1.75rem 1.5rem;
-  }
-
-  .metric-box {
-    padding: 0.85rem 1rem;
-  }
+.register-prompt h2 {
+  color: var(--trade-green);
 }

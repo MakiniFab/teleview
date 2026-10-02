@@ -7,22 +7,18 @@ const PAT_STORAGE_KEY = "deriv_pat_token";
 const PAT_EXPIRY_KEY = "deriv_pat_expiry";
 const ACCOUNT_TYPE_KEY = "deriv_account_type";
 const ACTIVE_BOT_KEY = "deriv_active_bot_id";
-const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
+const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
 
 export class StakingEngine {
   constructor({
     minStake = 1.00,
     ratio = 1.5,
     targetReturnRate = 0.55,
-    standardTargetWins = 25,
-    blockRowLimit = 50,
-    unitTargetProfit = 0.25, // Configurable unit profit target (Default: $0.25)
+    unitTargetProfit = 0.45,
   } = {}) {
     this.MIN_STAKE = minStake;
     this.RATIO = ratio;
     this.TARGET_RETURN_RATE = targetReturnRate;
-    this.STANDARD_TARGET_WINS = standardTargetWins;
-    this.BLOCK_ROW_LIMIT = blockRowLimit;
     this.UNIT_TARGET_PROFIT = unitTargetProfit;
 
     this.bankedWins = 0;
@@ -37,6 +33,17 @@ export class StakingEngine {
     this.stakingModifier = 0;
   }
 
+  // Helper method to determine modifier tiers (0, 1, 2, 3, max 4 at >= 50)
+  calculateModifier(baseRawStake) {
+    const stepSize = this.MIN_STAKE;
+
+    if (baseRawStake >= 50 * stepSize) return 4;
+    if (baseRawStake >= 20 * stepSize) return 3;
+    if (baseRawStake >= 9 * stepSize) return 2;
+    if (baseRawStake >= 3 * stepSize) return 1;
+    return 0;
+  }
+
   getNextStake(customMinStake) {
     if (customMinStake !== undefined) this.MIN_STAKE = Number(customMinStake);
 
@@ -48,28 +55,22 @@ export class StakingEngine {
 
     if (expectedWins > this.bankedWins) {
       const remWins = expectedWins - this.bankedWins;
-      let rawStake = (((expectedWins * this.UNIT_TARGET_PROFIT) - subtotal) / remWins) * 1.1;
+      // Calculate raw base stake without modifier inflation first
+      const baseRawStake = (((expectedWins * this.UNIT_TARGET_PROFIT) - subtotal) / remWins) * 1.1;
 
-      if (rawStake >= 8.00) {
-        this.stakingModifier = 2;
-      } else if (rawStake > 3.00 && this.stakingModifier === 0) {
-        this.stakingModifier = 1;
-      }
+      // Tiered modifier calculation: 3 -> +1, 9 -> +2, 20 -> +3, 50+ -> +4 (Max)
+      this.stakingModifier = this.calculateModifier(baseRawStake);
 
       const effectiveDenominator = remWins + this.stakingModifier;
       finalStake = (((expectedWins * this.UNIT_TARGET_PROFIT) - subtotal) / effectiveDenominator) * 1.1;
     } else {
       let divisor = this.stakingModifier > 0 ? this.stakingModifier : 1;
-      let rawStake = (((this.bankedWins * this.UNIT_TARGET_PROFIT) - subtotal) / divisor) * 1.1;
+      const baseRawStake = (((this.bankedWins * this.UNIT_TARGET_PROFIT) - subtotal) / divisor) * 1.1;
 
-      if (rawStake >= 8.00) {
-        this.stakingModifier = 2;
-        divisor = 2;
-      } else if (rawStake > 3.00 && this.stakingModifier === 0) {
-        this.stakingModifier = 1;
-        divisor = 1;
-      }
+      // Tiered modifier calculation based on raw base stake
+      this.stakingModifier = this.calculateModifier(baseRawStake);
 
+      divisor = this.stakingModifier > 0 ? this.stakingModifier : 1;
       finalStake = (((this.bankedWins * this.UNIT_TARGET_PROFIT) - subtotal) / divisor) * 1.1;
     }
 
@@ -96,41 +97,19 @@ export class StakingEngine {
     const effectiveWinsTarget = this.bankedWins >= expectedWins ? this.bankedWins : expectedWins;
     const expectedProfit = effectiveWinsTarget * this.UNIT_TARGET_PROFIT;
 
-    let blockEnded = false;
-    let blockStatus = "Active";
-
-    if (this.bankedWins >= this.STANDARD_TARGET_WINS) {
-      blockEnded = true;
-      blockStatus = "WIN";
-      this.pendingWinDebt = Math.max(0, this.pendingWinDebt - this.STANDARD_TARGET_WINS);
-    } else if (this.posInBlock >= this.BLOCK_ROW_LIMIT) {
-      blockEnded = true;
-      blockStatus = "LOSS";
-      const unrecoveredWins = this.STANDARD_TARGET_WINS - this.bankedWins;
-      this.pendingWinDebt += unrecoveredWins;
-    }
-
+    // Endless execution row tracker
     const currentBlockNum = this.blockNum;
     const currentPosInBlock = this.posInBlock;
-
-    if (blockEnded) {
-      this.bankedWins = 0;
-      this.totalLosses = 0;
-      this.cycleRunningBalance = 0.0;
-      this.consecutiveLosses = 0;
-      this.stakingModifier = 0;
-      this.blockNum += 1;
-      this.posInBlock = 1;
-    } else {
-      this.posInBlock += 1;
-    }
+    
+    // Increment row count endlessly without resets
+    this.posInBlock += 1;
 
     const nextStake = this.getNextStake(customMinStake);
 
     return {
       totalTrade: this.totalTradeCount,
       blockNum: currentBlockNum,
-      blockRow: `${currentPosInBlock}/${this.BLOCK_ROW_LIMIT}`,
+      blockRow: `${currentPosInBlock}`,
       outcome: isWin ? "W" : "L",
       blockLosses: this.totalLosses,
       blockWins: this.bankedWins,
@@ -140,7 +119,7 @@ export class StakingEngine {
       stakeUsed,
       profitLoss: realizedProfitLoss,
       runningBalance: Number(this.cycleRunningBalance.toFixed(2)),
-      blockStatus: `${blockStatus} ${this.pendingWinDebt} Wins`,
+      blockStatus: "Active",
       pendingWinDebt: this.pendingWinDebt,
       nextStake,
     };
@@ -233,13 +212,13 @@ export const TradingProvider = ({ children }) => {
   // Staking engines (1 to 5)
   const engineRef1 = useRef(new StakingEngine({ minStake: 1.00, unitTargetProfit: 0.45 }));
   const engineRef2 = useRef(new StakingEngine({ minStake: 1.00, unitTargetProfit: 0.45 }));
-  const engineRef3 = useRef(new StakingEngine({ minStake: 1.00, unitTargetProfit: 0.90 }));
+  const engineRef3 = useRef(new StakingEngine({ minStake: 1.00, unitTargetProfit: 0.45 }));
   const engineRef4 = useRef(new StakingEngine({ minStake: 1.00, unitTargetProfit: 0.45 }));
   const engineRef5 = useRef(new StakingEngine({ minStake: 1.00, unitTargetProfit: 0.45 }));
 
   const saveTokenWithExpiry = (token) => {
     localStorage.setItem(PAT_STORAGE_KEY, token);
-    localStorage.setItem(PAT_EXPIRY_KEY, (Date.now() + THREE_HOURS_MS).toString());
+    localStorage.setItem(PAT_EXPIRY_KEY, (Date.now() + SIX_HOURS_MS).toString());
     setPatToken(token);
   };
 

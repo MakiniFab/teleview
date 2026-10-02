@@ -125,30 +125,47 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Account Details Section */}
+        {/* Account Details / Onboarding Section */}
         <section className="dashboard-card">
-          <h2>Account Summary</h2>
           {isConnected && accountData ? (
-            <div className="account-details">
-              <div className="metric-box">
-                <span className="label">Account Type</span>
-                <span className="value">{accountType.toUpperCase()}</span>
+            <>
+              <h2>Account Summary</h2>
+              <div className="account-details">
+                <div className="metric-box">
+                  <span className="label">Account Type</span>
+                  <span className="value">{accountType.toUpperCase()}</span>
+                </div>
+                <div className="metric-box">
+                  <span className="label">Account ID</span>
+                  <span className="value">{accountData.account || "N/A"}</span>
+                </div>
+                <div className="metric-box">
+                  <span className="label">Available Balance</span>
+                  <span className="value highlighted">
+                    ${accountData.balance ? accountData.balance.toFixed(2) : "0.00"} <small>{accountData.currency || "USD"}</small>
+                  </span>
+                </div>
               </div>
-              <div className="metric-box">
-                <span className="label">Account ID</span>
-                <span className="value">{accountData.account || "N/A"}</span>
-              </div>
-              <div className="metric-box">
-                <span className="label">Available Balance</span>
-                <span className="value highlighted">
-                  ${accountData.balance ? accountData.balance.toFixed(2) : "0.00"} <small>{accountData.currency || "USD"}</small>
-                </span>
-              </div>
-            </div>
+            </>
           ) : (
-            <div className="empty-state">
-              <div className="empty-icon">🔒</div>
-              <p>Connect your Deriv PAT above to view live balance and account specifications.</p>
+            <div className="register-prompt" style={{ textAlign: "center", padding: "1rem" }}>
+              <h2>Don't have a Deriv Account?</h2>
+              <p style={{ margin: "1rem 0", color: "var(--text-secondary, #a0aec0)" }}>
+                To start automated trading, you'll need a Deriv trading account. Create an account in minutes to get access to both Demo and Real market execution.
+              </p>
+              <a
+                href="https://t.deriv.link?t=K63QJVM59A52"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="connect-btn"
+                style={{
+                  display: "inline-block",
+                  textDecoration: "none",
+                  marginTop: "0.5rem"
+                }}
+              >
+                Create a Free Deriv Account &rarr;
+              </a>
             </div>
           )}
         </section>

@@ -23,27 +23,38 @@ function NavigationBar() {
       <div className="header-inner">
         <div className="brand-wrapper">
           <NavLink to="/" className="brand-logo-group">
-            <span className="brand-name">Autom<span className="brand-accent">8</span></span>
+            <span className="brand-name">
+              Autom<span className="brand-accent">8</span>
+            </span>
           </NavLink>
-
           <nav className="nav-group">
-            <NavLink to="/" end className={({ isActive }) => `nav-btn ${isActive ? "active" : ""}`}>Dashboard</NavLink>
-            <NavLink to="/bots" className={({ isActive }) => `nav-btn ${isActive ? "active" : ""}`}>Trading Bots</NavLink>
-            <NavLink to="/signals" className={({ isActive }) => `nav-btn ${isActive ? "active" : ""}`}>Market Signals</NavLink>
-            <NavLink to="/history" className={({ isActive }) => `nav-btn ${isActive ? "active" : ""}`}>Trade History</NavLink>
-            <NavLink to="/contact" className={({ isActive }) => `nav-btn ${isActive ? "active" : ""}`}>Support</NavLink>
+            <NavLink to="/" end className={({ isActive }) => `nav-btn ${isActive ? "active" : ""}`}>
+              Dashboard
+            </NavLink>
+            <NavLink to="/bots" className={({ isActive }) => `nav-btn ${isActive ? "active" : ""}`}>
+              Trading Bots
+            </NavLink>
+            <NavLink to="/signals" className={({ isActive }) => `nav-btn ${isActive ? "active" : ""}`}>
+              Deriv Market Charts
+            </NavLink>
+            <NavLink to="/history" className={({ isActive }) => `nav-btn ${isActive ? "active" : ""}`}>
+              Trade History
+            </NavLink>
+            <NavLink to="/contact" className={({ isActive }) => `nav-btn ${isActive ? "active" : ""}`}>
+              Support
+            </NavLink>
           </nav>
         </div>
 
         <div className="account-status-group">
           {isConnected ? (
-            <div className="account-badge">
+            <div className="account-badge connected">
               <div className="badge-info">
                 <span className="status-dot online"></span>
                 <select
                   value={accountType}
                   onChange={(e) => switchAccount(e.target.value)}
-                  className="account-select"
+                  className={`account-select ${accountType === "real" ? "select-real" : "select-demo"}`}
                 >
                   <option value="demo">Demo ({accountData?.account || "Demo"})</option>
                   <option value="real">Real ({accountData?.account || "Real"})</option>
@@ -56,9 +67,9 @@ function NavigationBar() {
               <button onClick={handleDisconnect} className="disconnect-btn">Disconnect</button>
             </div>
           ) : (
-            <div className="account-badge">
+            <div className="account-badge disconnected">
               <span className="status-dot offline"></span>
-              <span style={{ color: "var(--trade-muted)" }}>Not Connected</span>
+              <span className="status-text-offline">Not Connected</span>
             </div>
           )}
         </div>

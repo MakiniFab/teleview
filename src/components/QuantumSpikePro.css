@@ -1,376 +1,100 @@
-/* ==========================================================================
-   Quantum Spike Pro - Main Container
-   ========================================================================== */
+/* Quantum Spike Pro Neon Emerald & Cyber Amber Theme */
 
-.bot-card {
-  background: #0d1117;
-  border: 1px solid #21262d;
-  border-radius: 12px;
-  padding: 24px;
-  color: #c9d1d9;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  transition: all 0.3s ease-in-out;
-  max-width: 900px;
-  margin: 0 auto;
+.quantum-card {
+  border: 1px solid rgba(0, 229, 153, 0.25) !important;
+  box-shadow: 0 0 15px rgba(0, 229, 153, 0.08);
 }
 
-.bot-card.premium-card {
-  border-color: #30363d;
-  background: linear-gradient(145deg, #0d1117 0%, #161b22 100%);
+.quantum-card.active-trading {
+  border-color: #00e599 !important;
+  box-shadow: 0 0 25px rgba(0, 229, 153, 0.25);
 }
 
-.bot-card.active-trading {
-  border-color: #a371f7;
-  box-shadow: 0 0 20px rgba(163, 113, 247, 0.18);
+.quantum-glow-text {
+  color: #00e599 !important;
+  text-shadow: 0 0 8px rgba(0, 229, 153, 0.4);
 }
 
-/* ==========================================================================
-   Header Section
-   ========================================================================== */
-
-.bot-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #21262d;
-}
-
-.bot-title-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.title-with-badge {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.title-with-badge h2 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #f0f6fc;
-  letter-spacing: -0.5px;
-}
-
-.premium-badge {
-  background: linear-gradient(135deg, #8957e5 0%, #a371f7 100%);
-  color: #ffffff;
-  font-size: 0.65rem;
+.quantum-badge {
+  background: linear-gradient(135deg, #00e599 0%, #ffb800 100%) !important;
+  color: #0a0f1d !important;
   font-weight: 800;
-  padding: 2px 8px;
-  border-radius: 20px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
 }
 
-.bot-subtitle {
-  font-size: 0.85rem;
-  color: #8b949e;
+.quantum-account-tag {
+  border: 1px solid #ffb800 !important;
+  color: #ffb800 !important;
+  background: rgba(255, 184, 0, 0.1) !important;
 }
 
-.account-tag {
-  background: #21262d;
-  color: #a371f7;
-  border: 1px solid #30363d;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 6px;
-  letter-spacing: 0.5px;
+.quantum-notice {
+  background: rgba(0, 229, 153, 0.08) !important;
+  border-left: 3px solid #00e599 !important;
+  color: #e2e8f0 !important;
 }
 
-/* ==========================================================================
-   Explanation & Notice Box
-   ========================================================================== */
-
-.bot-explanation {
-  background: #161b22;
-  border: 1px solid #21262d;
-  border-radius: 8px;
-  padding: 14px 16px;
-  margin-bottom: 20px;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: #8b949e;
+.quantum-ribbon {
+  border-color: rgba(0, 229, 153, 0.15) !important;
+  background: rgba(10, 15, 29, 0.6) !important;
 }
 
-.bot-explanation p {
-  margin: 0 0 8px 0;
+.quantum-status-on {
+  color: #00e599 !important;
+  text-shadow: 0 0 8px rgba(0, 229, 153, 0.6);
 }
 
-.bot-explanation p:last-child {
-  margin-bottom: 0;
+.direction-tag.call {
+  color: #00e599 !important;
+  font-weight: bold;
 }
 
-.notice-highlight {
-  color: #d29922;
-  font-weight: 600;
+.direction-tag.put {
+  color: #ffb800 !important;
+  font-weight: bold;
 }
 
-.bot-explanation strong {
-  color: #c9d1d9;
+.quantum-win {
+  color: #00e599 !important;
 }
 
-/* ==========================================================================
-   Configuration Grid
-   ========================================================================== */
-
-.config-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-bottom: 20px;
+.quantum-btn {
+  background: linear-gradient(135deg, #00e599 0%, #00a86b 100%) !important;
+  color: #050b14 !important;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(0, 229, 153, 0.3) !important;
 }
 
-.config-grid.single-field {
-  grid-template-columns: 1fr;
+.quantum-btn:hover {
+  background: linear-gradient(135deg, #00ffaa 0%, #00c47d 100%) !important;
+  box-shadow: 0 6px 20px rgba(0, 229, 153, 0.5) !important;
 }
 
-.form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.quantum-secondary-btn {
+  border: 1px solid #ffb800 !important;
+  color: #ffb800 !important;
+  background: transparent !important;
 }
 
-.form-field label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #8b949e;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+.quantum-secondary-btn:hover {
+  background: rgba(255, 184, 0, 0.15) !important;
 }
 
-.form-field input {
-  background: #0d1117;
-  border: 1px solid #30363d;
-  border-radius: 6px;
-  padding: 10px 14px;
-  color: #f0f6fc;
-  font-size: 0.95rem;
-  outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+.quantum-stop-btn {
+  background: linear-gradient(135deg, #ffb800 0%, #d97706 100%) !important;
+  color: #050b14 !important;
+  font-weight: bold;
 }
 
-.form-field input:focus {
-  border-color: #a371f7;
-  box-shadow: 0 0 0 3px rgba(163, 113, 247, 0.2);
+.quantum-console-wrapper {
+  border-color: rgba(0, 229, 153, 0.2) !important;
 }
 
-.form-field input:disabled {
-  background: #161b22;
-  color: #484f58;
-  cursor: not-allowed;
-  border-color: #21262d;
+.quantum-console-title {
+  color: #ffb800 !important;
+  border-bottom: 1px solid rgba(255, 184, 0, 0.15) !important;
 }
 
-/* ==========================================================================
-   Metrics Ribbon
-   ========================================================================== */
-
-.metrics-ribbon {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  background: #161b22;
-  border: 1px solid #21262d;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 24px;
-}
-
-.metric-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.metric-label {
-  font-size: 0.75rem;
-  color: #8b949e;
-  text-transform: uppercase;
-  font-weight: 600;
-}
-
-.metric-value {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #f0f6fc;
-}
-
-.metric-value.status-on {
-  color: #3fb950;
-  text-shadow: 0 0 8px rgba(63, 185, 80, 0.35);
-}
-
-.metric-value.status-off {
-  color: #f85149;
-}
-
-.metric-value.highlight-win {
-  color: #a371f7;
-}
-
-/* ==========================================================================
-   Controls & Action Buttons
-   ========================================================================== */
-
-.controls {
-  margin-bottom: 24px;
-}
-
-.dual-controls {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.start-btn,
-.stop-btn {
-  width: 100%;
-  padding: 12px 20px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  border-radius: 6px;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.premium-btn {
-  background: #8957e5;
-  color: #ffffff;
-  border-color: rgba(240, 246, 252, 0.1);
-}
-
-.premium-btn:hover:not(:disabled) {
-  background: #9e6aef;
-  box-shadow: 0 4px 12px rgba(137, 87, 229, 0.3);
-}
-
-.resume-btn {
-  background: #1f6beb;
-}
-
-.resume-btn:hover:not(:disabled) {
-  background: #388bfd;
-  box-shadow: 0 4px 12px rgba(56, 139, 253, 0.25);
-}
-
-.new-cycle-btn {
-  background: #21262d;
-  color: #c9d1d9;
-  border-color: #30363d;
-}
-
-.new-cycle-btn:hover:not(:disabled) {
-  background: #30363d;
-  color: #f0f6fc;
-}
-
-.stop-btn {
-  background: #da3633;
-  color: #ffffff;
-}
-
-.stop-btn:hover:not(:disabled) {
-  background: #f85149;
-  box-shadow: 0 4px 12px rgba(248, 81, 73, 0.25);
-}
-
-.start-btn:disabled,
-.stop-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-/* ==========================================================================
-   Terminal Console Log Section
-   ========================================================================== */
-
-.console-wrapper {
-  background: #010409;
-  border: 1px solid #21262d;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.console-title {
-  background: #161b22;
-  padding: 8px 14px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #8b949e;
-  border-bottom: 1px solid #21262d;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.logs-console {
-  margin: 0;
-  padding: 14px;
-  height: 180px;
-  overflow-y: auto;
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-  font-size: 0.8rem;
-  line-height: 1.6;
-  color: #d2a8ff;
-  white-space: pre-wrap;
-  word-break: break-all;
-}
-
-/* Terminal Custom Scrollbar */
-.logs-console::-webkit-scrollbar {
-  width: 6px;
-}
-
-.logs-console::-webkit-scrollbar-track {
-  background: #010409;
-}
-
-.logs-console::-webkit-scrollbar-thumb {
-  background: #21262d;
-  border-radius: 3px;
-}
-
-.logs-console::-webkit-scrollbar-thumb:hover {
-  background: #30363d;
-}
-
-/* ==========================================================================
-   Responsive Breakpoints
-   ========================================================================== */
-
-@media (max-width: 768px) {
-  .metrics-ribbon {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 480px) {
-  .bot-card {
-    padding: 16px;
-  }
-
-  .bot-header {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .metrics-ribbon {
-    grid-template-columns: 1fr;
-  }
-
-  .dual-controls {
-    grid-template-columns: 1fr;
-  }
+.quantum-logs {
+  color: #00e599 !important;
+  background: #040812 !important;
 }
