@@ -1,14 +1,30 @@
 import React, { useEffect } from "react";
-import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
+import { BrowserRouter, Routes, Route, NavLink, useNavigate } from "react-router-dom";
 import { TradingProvider, useTrading } from "./context/TradingContext";
 
 import HomePage from "./pages/HomePage";
 import BotsPage from "./pages/BotsPage";
-import MarketAnalysis from "./pages/MarketAnalysis";
 import HistoryPage from "./pages/HistoryPage";
 import ContactPage from "./pages/ContactPage";
+import Footer from "./pages/Footer";
 
 import "./App.css";
+
+function FloatingChatWidget() {
+  const navigate = useNavigate();
+
+  return (
+    <button
+      className="floating-chat-btn"
+      onClick={() => navigate("/contact")}
+      aria-label="Chat with Support"
+      title="Chat with Us"
+    >
+      <span className="chat-btn-icon">💬</span>
+      <span className="chat-btn-text">Chat with Us</span>
+    </button>
+  );
+}
 
 function NavigationBar() {
   const { isConnected, accountType, switchAccount, accountData, handleDisconnect } = useTrading();
@@ -33,9 +49,6 @@ function NavigationBar() {
             </NavLink>
             <NavLink to="/bots" className={({ isActive }) => `nav-btn ${isActive ? "active" : ""}`}>
               Trading Bots
-            </NavLink>
-            <NavLink to="/signals" className={({ isActive }) => `nav-btn ${isActive ? "active" : ""}`}>
-              Deriv Market Charts
             </NavLink>
             <NavLink to="/history" className={({ isActive }) => `nav-btn ${isActive ? "active" : ""}`}>
               Trade History
@@ -64,7 +77,9 @@ function NavigationBar() {
               <div className="account-balance">
                 ${(accountData?.balance ?? 0).toFixed(2)} {accountData?.currency || "USD"}
               </div>
-              <button onClick={handleDisconnect} className="disconnect-btn">Disconnect</button>
+              <button onClick={handleDisconnect} className="disconnect-btn">
+                Disconnect
+              </button>
             </div>
           ) : (
             <div className="account-badge disconnected">
@@ -88,16 +103,15 @@ export default function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/bots" element={<BotsPage />} />
-              <Route path="/signals" element={<MarketAnalysis />} />
               <Route path="/history" element={<HistoryPage />} />
               <Route path="/contact" element={<ContactPage />} />
             </Routes>
           </main>
-          <footer className="app-footer">
-            <div className="footer-inner">
-              <p>© {new Date().getFullYear()} Deriv Autom8. A FAB Software Solutions web platform.</p>
-            </div>
-          </footer>
+          
+          {/* Floating Chat Widget */}
+          <FloatingChatWidget />
+
+          < Footer />
         </div>
       </BrowserRouter>
     </TradingProvider>

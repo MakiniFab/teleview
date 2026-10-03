@@ -1,26 +1,47 @@
-/* ==========================================================================
-   App.css — Mobile-First Architecture & Viewport Overflow Protection
-   ========================================================================== */
-
-:root {
-  --trade-bg: #0a0e17;           /* Deep Dark Background */
-  --trade-panel: #131a29;        /* Panel / Header Surface */
-  --trade-panel-border: #1e293b; /* Subtle Border Line */
-  --trade-input-bg: #090d16;      /* Input Field / Badge Fill */
+:root,
+[data-theme="dark"] {
+  /* Solid Color Fallbacks */
+  --trade-bg-raw: #0a0e17;
   
-  --trade-white: #ffffff;        /* Primary Text */
-  --trade-muted: #8e9bb0;        /* Muted / Secondary Text */
+  /* Semi-transparent overlay over the background image */
+  --trade-bg-overlay: rgba(10, 14, 23, 0.88); 
   
-  --trade-blue: #2563eb;         /* Brand Primary Accent */
+  --trade-panel: rgba(19, 26, 41, 0.85);        /* Slightly translucent panel surface */
+  --trade-panel-border: #1e293b; 
+  --trade-input-bg: rgba(9, 13, 22, 0.75);      
+  
+  --trade-white: #ffffff;        
+  --trade-muted: #8e9bb0;        
+  --trade-overlay: rgba(10, 14, 23, 0.65); 
+  
+  --trade-blue: #2563eb;         
   --trade-blue-hover: #1d4ed8;   
-  --trade-green: #00c076;        /* Positive / Online Status */
-  --trade-red: #ff3b30;          /* Bearish / Disconnect Red */
+  --trade-green: #00c076;        
+  --trade-red: #ff3b30;          
   
   --radius-sm: 6px;
   --radius-md: 10px;
 }
 
-/* Global Reset & Layout Boundary Shields */
+[data-theme="light"] {
+  --trade-bg-raw: #f8fafc;
+  
+  /* Light mode semi-transparent overlay */
+  --trade-bg-overlay: rgba(248, 250, 252, 0.88);
+  
+  --trade-panel: rgba(255, 255, 255, 0.9);      
+  --trade-panel-border: #e2e8f0; 
+  --trade-input-bg: rgba(241, 245, 249, 0.85);     
+  
+  --trade-white: #0f172a;        
+  --trade-muted: #64748b;        
+  --trade-overlay: rgba(255, 255, 255, 0.75); 
+}
+
+/* --------------------------------------------------------------------------
+   2. Global Reset & Layout Boundary Shields
+   -------------------------------------------------------------------------- */
+
 *,
 *::before,
 *::after {
@@ -33,11 +54,22 @@ body {
   padding: 0;
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden; /* Global horizontal overflow protection */
-  background-color: var(--trade-bg);
+  overflow-x: hidden;
+  
+  /* Fallback solid color */
+  background-color: var(--trade-bg-raw);
+  
+  /* Layered background: theme color overlay on top of the webp image */
+  background-image: linear-gradient(var(--trade-bg-overlay), var(--trade-bg-overlay)), url("/main background.webp");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  background-attachment: fixed; /* Keeps background fixed while scrolling */
+
   color: var(--trade-white);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 .app-container {
@@ -47,19 +79,24 @@ body {
   width: 100%;
   max-width: 100vw;
   overflow-x: hidden;
+  
+  /* Inherit global background behavior */
+  background-color: transparent;
 }
 
 /* --------------------------------------------------------------------------
-   1. Mobile-First Layout Default (< 850px)
+   3. Mobile-First Layout Default (< 850px)
    -------------------------------------------------------------------------- */
 
 .app-header {
   background-color: var(--trade-panel);
+  backdrop-filter: blur(8px); /* Optional: adds modern frosted glass blur */
   border-bottom: 1px solid var(--trade-panel-border);
   position: sticky;
   top: 0;
   z-index: 1000;
   width: 100%;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
 .header-inner {
@@ -89,20 +126,16 @@ body {
   border-radius: var(--radius-sm);
   border: 1px solid var(--trade-panel-border);
   
-  /* Set image as background */
   background-image: url("/loggos.png");
   background-repeat: repeat-x;
   background-size: auto 100%;
   
-  /* Continuous left-to-right infinite scroll animation */
   animation: scrollBgRight 20s linear infinite;
   
-  /* Glassmorphism overlay so logo text remains sharp and legible */
   position: relative;
   overflow: hidden;
 }
 
-/* Semi-transparent dark overlay to keep text high-contrast over moving background */
 .brand-logo-group::before {
   content: "";
   position: absolute;
@@ -110,26 +143,25 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(10, 14, 23, 0.65); /* Adjust opacity if needed */
+  background: var(--trade-overlay);
   z-index: 1;
+  transition: background 0.25s ease;
 }
 
-/* Ensure brand text sits above the background animation */
 .brand-name {
   position: relative;
   z-index: 2;
   font-size: 1.35rem;
   font-weight: 800;
   letter-spacing: -0.5px;
-  color: #ffffff;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  color: var(--trade-white);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .brand-accent {
   color: var(--trade-green);
 }
 
-/* Left-to-Right Scrolling Keyframe */
 @keyframes scrollBgRight {
   0% {
     background-position: 0% 0;
@@ -139,7 +171,6 @@ body {
   }
 }
 
-/* Scrollable Horizontal Navigation for Mobile */
 .nav-group {
   display: flex;
   align-items: center;
@@ -173,16 +204,15 @@ body {
 
 .nav-btn:hover {
   color: var(--trade-white);
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(37, 99, 235, 0.08);
 }
 
 .nav-btn.active {
-  color: var(--trade-white);
-  background-color: rgba(37, 99, 235, 0.15);
+  color: var(--trade-blue);
+  background-color: rgba(37, 99, 235, 0.12);
   border: 1px solid rgba(37, 99, 235, 0.3);
 }
 
-/* Account Status Group */
 .account-status-group {
   width: 100%;
   display: flex;
@@ -201,6 +231,7 @@ body {
   gap: 0.5rem;
   font-size: 0.8rem;
   flex-wrap: wrap;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
 .badge-info {
@@ -237,6 +268,7 @@ body {
   font-weight: 600;
   cursor: pointer;
   outline: none;
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
 }
 
 .account-select:hover,
@@ -270,10 +302,9 @@ body {
 
 .disconnect-btn:hover {
   background-color: var(--trade-red);
-  color: var(--trade-white);
+  color: #ffffff;
 }
 
-/* Main Main Viewport Container */
 .app-main {
   flex: 1;
   width: 100%;
@@ -283,13 +314,14 @@ body {
   box-sizing: border-box;
 }
 
-/* Footer Container */
 .app-footer {
   background-color: var(--trade-panel);
+  backdrop-filter: blur(8px);
   border-top: 1px solid var(--trade-panel-border);
   padding: 1.25rem 1rem;
   margin-top: auto;
   width: 100%;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
 .footer-inner {
@@ -306,7 +338,7 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   2. Desktop / Tablet Breakpoint (>= 850px)
+   4. Desktop / Tablet Breakpoint (>= 850px)
    -------------------------------------------------------------------------- */
 
 @media (min-width: 850px) {
@@ -351,5 +383,114 @@ body {
 
   .app-main {
     padding: 1.5rem;
+  }
+}
+
+/* ==========================================
+   FLOATING CHAT WITH US BUTTON (STANDALONE CSS)
+   ========================================== */
+
+/* Theme Variables (fallback values if not set globally) */
+:root,
+html[data-theme="dark"] {
+  --chat-btn-bg: #10b981;          /* Green accent */
+  --chat-btn-hover: #059669;
+  --chat-btn-text: #ffffff;
+  --chat-btn-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --chat-btn-shadow-hover: 0 6px 18px rgba(16, 185, 129, 0.35);
+}
+
+html[data-theme="light"] {
+  --chat-btn-bg: #f97316;          /* Orange accent */
+  --chat-btn-hover: #ea580c;
+  --chat-btn-text: #ffffff;
+  --chat-btn-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+  --chat-btn-shadow-hover: 0 6px 18px rgba(249, 115, 22, 0.45);
+}
+
+/* Button Container (Mobile-First) */
+.floating-chat-btn {
+  /* Positioning */
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 999;
+
+  /* Flex Layout */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+
+  /* Sizing & Shape */
+  padding: 0.65rem 1rem;
+  border: none;
+  border-radius: 50px;
+
+  /* Theme Styling */
+  background-color: var(--accent-primary, var(--chat-btn-bg));
+  color: var(--chat-btn-text);
+  box-shadow: var(--shadow-floating, var(--chat-btn-shadow));
+
+  /* Typography */
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+
+  /* Interaction & Animation */
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: 
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+/* Icon & Label Sub-elements */
+.floating-chat-btn .chat-btn-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+  display: inline-block;
+}
+
+.floating-chat-btn .chat-btn-text {
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+/* Hover State */
+.floating-chat-btn:hover {
+  background-color: var(--accent-hover, var(--chat-btn-hover));
+  transform: translateY(-2px);
+  box-shadow: var(--chat-btn-shadow-hover);
+}
+
+/* Active / Pressed State */
+.floating-chat-btn:active {
+  transform: translateY(0) scale(0.96);
+  box-shadow: var(--shadow-floating, var(--chat-btn-shadow));
+}
+
+/* Focus State (Accessibility) */
+.floating-chat-btn:focus-visible {
+  outline: 2px solid var(--text-primary, #ffffff);
+  outline-offset: 3px;
+}
+
+/* Desktop & Larger Screens (≥ 768px) */
+@media (min-width: 768px) {
+  .floating-chat-btn {
+    bottom: 2rem;
+    right: 2rem;
+    padding: 0.8rem 1.25rem;
+    font-size: 0.95rem;
+    gap: 0.55rem;
+  }
+
+  .floating-chat-btn .chat-btn-icon {
+    font-size: 1.25rem;
   }
 }

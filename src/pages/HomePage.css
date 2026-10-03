@@ -1,325 +1,806 @@
-/* Base Variables & Theme Definitions */
-:root {
-  /* Common Palette */
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  
-  /* Trading Signal Colors (Consistent Across Themes) */
-  --trade-green: #10b981;
-  --trade-green-hover: #059669;
-  --trade-green-bg: rgba(16, 185, 129, 0.12);
-  --trade-green-border: rgba(16, 185, 129, 0.3);
-  
-  --trade-red: #ef4444;
-  --trade-red-hover: #dc2626;
-  --trade-red-bg: rgba(239, 68, 68, 0.12);
-  --trade-red-border: rgba(239, 68, 68, 0.3);
+/* ==========================================================================
+   THEME VARIABLES & COLOR PALETTE
+   ========================================================================== */
 
-  /* Light Theme Defaults */
-  --bg-color: #f8fafc;
-  --card-bg: #ffffff;
-  --card-border: #e2e8f0;
-  --text-primary: #0f172a;
-  --text-secondary: #64748b;
-  --input-bg: #f1f5f9;
-  --input-border: #cbd5e1;
-  --accent-color: var(--trade-green);
-  --accent-hover: var(--trade-green-hover);
-}
-
-/* Dark Theme Variables */
+/* Dark Mode (Default) - Deep Cyber Carbon with High-Contrast Neon Green & Crimson */
+:root,
 [data-theme="dark"] {
-  --bg-color: #0b0f17;
-  --card-bg: #151c28;
-  --card-border: #1e293b;
+  --bg-main: #06090e;
+  --bg-card: #0f141c;
+  --bg-card-hover: #161e2b;
+  --bg-input: #0a0d13;
+  --bg-badge: rgba(0, 255, 136, 0.08);
+
+  --border-color: #1e293b;
+  --border-accent: #00ff88;
+
+  /* Typography */
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
-  --input-bg: #0f172a;
-  --input-border: #334155;
-  --accent-color: var(--trade-green);
-  --accent-hover: var(--trade-green-hover);
+  --text-muted: #64748b;
+
+  /* Vibrant Accents & High-Contrast Signals */
+  --accent-primary: #00ff88; /* Cyber Neon Green */
+  --accent-primary-hover: #00cc6a;
+  --accent-glow: rgba(0, 255, 136, 0.22);
+
+  --accent-secondary: #00e5ff; /* Electric Cyan */
+
+  /* High-Contrast Red Signals (Real Account / Error / Stop Loss) */
+  --signal-red: #ff2a54;
+  --signal-red-glow: rgba(255, 42, 84, 0.25);
+  --error-bg: rgba(255, 42, 84, 0.12);
+
+  /* Shadows & Depth */
+  --shadow-sm: 0 4px 10px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 16px 36px -8px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 255, 136, 0.08);
 }
 
-/* Global Styles */
-body {
-  background-color: var(--bg-color);
-  color: var(--text-primary);
-  font-family: var(--font-family);
-  margin: 0;
-  transition: background-color 0.3s ease, color 0.3s ease;
+/* Light Mode - High-Contrast Sunburst Orange & Electric Gold */
+[data-theme="light"] {
+  --bg-main: #fffcf7;
+  --bg-card: #ffffff;
+  --bg-card-hover: #fff8ef;
+  --bg-input: #f8f1e7;
+  --bg-badge: rgba(255, 102, 0, 0.1);
+
+  --border-color: #f0e2d0;
+  --border-accent: #ff6600;
+
+  /* Typography */
+  --text-primary: #18110a;
+  --text-secondary: #574a3e;
+  --text-muted: #8c7a6b;
+
+  /* Vibrant Accents & High-Contrast Signals */
+  --accent-primary: #ff6600; /* Intense Electric Sunburst Orange */
+  --accent-primary-hover: #e05500;
+  --accent-glow: rgba(255, 102, 0, 0.28);
+
+  --accent-secondary: #ffb700; /* Vibrant Gold Accent */
+
+  /* High-Contrast Red Signals */
+  --signal-red: #e60039;
+  --signal-red-glow: rgba(230, 0, 57, 0.2);
+  --error-bg: rgba(230, 0, 57, 0.08);
+
+  /* Shadows & Depth */
+  --shadow-sm: 0 4px 12px rgba(255, 102, 0, 0.08);
+  --shadow-lg: 0 18px 40px -10px rgba(255, 102, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+/* ==========================================================================
+   GLOBAL CONTAINER & MOBILE-FIRST BASE
+   ========================================================================== */
+
+* {
+  box-sizing: border-box;
 }
 
 .home-container {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 1.5rem 1rem 5rem; /* Expanded vertical padding for longer scroll layout */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  color: var(--text-primary);
+  background-color: var(--bg-main);
+  min-height: 100vh;
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
 }
 
-/* Hero Section */
-.hero-card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 12px;
-  padding: 2rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+/* ==========================================================================
+   CARD ARCHITECTURE & GLOW BORDERS
+   ========================================================================== */
+
+.hero-card,
+.auth-card,
+.dashboard-card,
+.connected-card {
+  background: var(--bg-card);
+  background-image: linear-gradient(var(--trade-bg-overlay), var(--trade-bg-overlay)), url("/loggos.png");
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 1.75rem 1.25rem;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Top Accent Line Gradient for visual pop */
+.hero-card::before,
+.connected-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+}
+
+/* Desktop spacing adjustment */
+@media (min-width: 768px) {
+  .hero-card,
+  .auth-card,
+  .dashboard-card,
+  .connected-card {
+    padding: 2.75rem 2.5rem;
+  }
+}
+
+/* ==========================================================================
+   HERO / TOP HEADER SECTION
+   ========================================================================== */
+
+.hero-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .brand-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  background: var(--trade-green-bg);
-  border: 1px solid var(--trade-green-border);
-  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  padding: 0.5rem 1rem;
+  border-radius: 30px;
+  box-shadow: var(--shadow-sm);
 }
 
 .logo-text {
-  font-weight: 700;
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
   color: var(--text-primary);
+  text-transform: uppercase;
 }
 
 .logo-accent {
-  color: var(--trade-green);
+  color: var(--accent-primary);
+  font-size: 1.1em;
+}
+
+.theme-toggle-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  border-radius: 30px;
+  cursor: pointer;
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.theme-toggle-btn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  box-shadow: 0 0 12px var(--accent-glow);
 }
 
 .hero-card h1 {
-  margin-top: 1.5rem;
-  font-size: 2.2rem;
-  background: linear-gradient(135deg, var(--trade-green), var(--trade-red));
+  font-size: 1.85rem;
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  margin: 0 0 1.25rem 0;
+  background: linear-gradient(135deg, var(--text-primary) 30%, var(--accent-primary) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
+@media (min-width: 768px) {
+  .hero-card h1 {
+    font-size: 2.6rem;
+  }
+}
+
 .hero-subtitle-container {
-  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .hero-subtitle {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
+  line-height: 1.6;
   color: var(--text-primary);
+  font-weight: 500;
+  margin: 0;
+}
+
+.hero-subtitle strong {
+  color: var(--accent-primary);
 }
 
 .hero-description {
+  font-size: 0.95rem;
+  line-height: 1.65;
   color: var(--text-secondary);
-  line-height: 1.6;
+  margin: 0;
 }
 
-/* Layout Grid */
+/* ==========================================================================
+   DISCONNECTED STATE LAYOUT (AUTH & ONBOARDING)
+   ========================================================================== */
+
 .grid-layout {
   display: grid;
   grid-template-columns: 1fr;
   gap: 2rem;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 900px) {
   .grid-layout {
+    grid-template-columns: 1.15fr 0.85fr;
+  }
+}
+
+.auth-card h2,
+.dashboard-card h2 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem 0;
+}
+
+.hint {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+/* Account Switcher (Demo vs Real Accent Contrast) */
+.account-type-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  background: var(--bg-input);
+  padding: 0.4rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
+}
+
+.account-type-toggle .toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 0.75rem 0.5rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+/* Demo Active State (Green Glow) */
+.account-type-toggle .toggle-btn.active:first-child {
+  background: var(--accent-primary);
+  color: #000000;
+  box-shadow: 0 0 14px var(--accent-glow);
+}
+
+/* Real Active State (Red Signal Glow) */
+.account-type-toggle .toggle-btn.active:last-child {
+  background: var(--signal-red);
+  color: #ffffff;
+  box-shadow: 0 0 14px var(--signal-red-glow);
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.token-input {
+  width: 100%;
+  padding: 1rem 1.2rem;
+  background: var(--bg-input);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 0.98rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.token-input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 4px var(--accent-glow);
+}
+
+.connect-btn,
+.primary-cta-btn {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-primary-hover));
+  color: #000000;
+  font-weight: 800;
+  font-size: 1rem;
+  padding: 1rem 1.75rem;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: transform 0.2s ease, box-shadow 0.25s ease;
+  box-shadow: 0 4px 15px var(--accent-glow);
+}
+
+.connect-btn:hover,
+.primary-cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px var(--accent-glow);
+}
+
+.register-prompt {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 1rem;
+}
+
+.register-text {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.register-btn {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+/* PAT Guide styling */
+.pat-guide {
+  margin-top: 2rem;
+  padding-top: 1.75rem;
+  border-top: 1px dashed var(--border-color);
+}
+
+.pat-guide h3 {
+  font-size: 1.05rem;
+  margin-bottom: 1rem;
+}
+
+.icon-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.icon-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.step-icon {
+  font-size: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+.icon-list code {
+  background: var(--bg-input);
+  color: var(--accent-primary);
+  border: 1px solid var(--border-color);
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.deriv-link {
+  color: var(--accent-primary);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: gap 0.2s ease;
+}
+
+.deriv-link:hover {
+  gap: 0.6rem;
+  text-decoration: underline;
+}
+
+.error-banner {
+  background: var(--error-bg);
+  border: 1px solid var(--signal-red);
+  color: var(--signal-red);
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+  font-weight: 600;
+}
+
+.status-banner {
+  background: var(--bg-badge);
+  border: 1px solid var(--accent-primary);
+  color: var(--text-primary);
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+/* ==========================================================================
+   CONNECTED STATE: EXPANDED PLATFORM HUB
+   ========================================================================== */
+
+.connected-dashboard-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem; /* Generous spacing down the page */
+}
+
+.section-badge {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-badge);
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
+  padding: 0.35rem 0.85rem;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+}
+
+.section-lead {
+  font-size: 1.08rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin-bottom: 1.75rem;
+}
+
+.section-subtitle {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-primary);
+  font-weight: 800;
+  margin: -0.25rem 0 0.5rem 0;
+}
+
+/* Modern Step Cards Grid (Replaces plain ol lists) */
+.steps-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  margin: 1.75rem 0;
+}
+
+@media (min-width: 640px) {
+  .steps-container {
     grid-template-columns: 1fr 1fr;
   }
 }
 
-/* Cards Base */
-.auth-card, .dashboard-card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 12px;
+.step-card {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
   padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
-.hint {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  margin-bottom: 1.5rem;
+.step-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-primary);
 }
 
-/* Account Toggle Buttons */
-.account-type-toggle {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  background: var(--input-bg);
-  padding: 4px;
-  border-radius: 8px;
-}
-
-.toggle-btn {
-  flex: 1;
-  padding: 0.6rem;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-/* Red / Green Indicators for Account Toggles */
-.toggle-btn.active {
-  background: var(--card-bg);
-  color: var(--text-primary);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Demo account active state -> Green accent */
-.account-type-toggle .toggle-btn:first-child.active {
-  color: var(--trade-green);
-  border: 1px solid var(--trade-green-border);
-}
-
-/* Real account active state -> Red accent */
-.account-type-toggle .toggle-btn:last-child.active {
-  color: var(--trade-red);
-  border: 1px solid var(--trade-red-border);
-}
-
-/* Form Controls */
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.token-input {
-  padding: 0.8rem 1rem;
-  background: var(--input-bg);
-  border: 1px solid var(--input-border);
-  border-radius: 8px;
-  color: var(--text-primary);
-  outline: none;
-  transition: border-color 0.2s ease;
-}
-
-.token-input:focus {
-  border-color: var(--trade-green);
-}
-
-/* Primary Call To Action Button (Green Action) */
-.connect-btn {
-  padding: 0.8rem 1.2rem;
-  background: var(--trade-green);
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.connect-btn:hover {
-  background: var(--trade-green-hover);
-}
-
-/* Status & Connection Alerts */
-.connected-panel {
-  padding: 1rem;
-  background: var(--trade-green-bg);
-  border: 1px solid var(--trade-green-border);
-  border-radius: 8px;
-  margin-bottom: 1rem;
-}
-
-.status-indicator.online {
-  color: var(--trade-green);
-  font-weight: 600;
+.step-header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.85rem;
+  margin-bottom: 0.85rem;
 }
 
-.status-indicator .dot {
-  width: 8px;
-  height: 8px;
-  background-color: var(--trade-green);
+.step-number {
+  background: var(--accent-primary);
+  color: #000000;
+  font-weight: 900;
+  font-size: 0.9rem;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  box-shadow: 0 0 8px var(--trade-green);
-}
-
-.error-banner {
-  background: var(--trade-red-bg);
-  border: 1px solid var(--trade-red-border);
-  color: var(--trade-red);
-  padding: 0.75rem;
-  border-radius: 8px;
-  margin-top: 1rem;
-  font-size: 0.9rem;
-}
-
-.status-banner {
-  background: var(--trade-green-bg);
-  border: 1px solid var(--trade-green-border);
-  color: var(--trade-green);
-  padding: 0.75rem;
-  border-radius: 8px;
-  margin-top: 1rem;
-  font-size: 0.9rem;
-}
-
-/* PAT Instructions Guide */
-.pat-guide {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--card-border);
-}
-
-.pat-guide ol {
-  padding-left: 1.2rem;
-  color: var(--text-secondary);
-}
-
-.pat-guide li {
-  margin-bottom: 0.5rem;
-}
-
-.deriv-link {
-  color: var(--trade-green);
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.deriv-link:hover {
-  text-decoration: underline;
-}
-
-/* Dashboard Metric Boxes */
-.account-details {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.metric-box {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 1rem;
-  background: var(--input-bg);
-  border-radius: 8px;
-  border-left: 4px solid var(--trade-green);
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.metric-box .label {
-  color: var(--text-secondary);
-  font-weight: 500;
+.step-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.metric-box .value {
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.metric-box .value.highlighted {
-  color: var(--trade-green);
+.step-icon-badge {
   font-size: 1.2rem;
 }
 
-/* Registration Call-To-Action (Non-Connected State) */
-.register-prompt {
-  background: linear-gradient(180deg, var(--card-bg) 0%, var(--trade-green-bg) 100%);
-  border: 1px solid var(--trade-green-border);
-  border-radius: 12px;
+.step-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
 }
 
-.register-prompt h2 {
-  color: var(--trade-green);
+.step-card p {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.step-card a {
+  color: var(--accent-primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.step-card a:hover {
+  text-decoration: underline;
+}
+
+/* Social & Video Tutorials Hub */
+.social-tutorials-box {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin: 2rem 0 1.5rem;
+}
+
+.social-tutorials-box h3 {
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.social-tutorials-box p {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  margin: 0 0 1.25rem 0;
+}
+
+.social-links-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.social-link {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 0.5rem 0.8rem;
+  border-radius: 50%; /* Made circular to neatly frame icon images */
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.social-link:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+/* Image Icon Styling */
+.social-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.social-link:hover .social-icon {
+  transform: scale(1.1);
+}
+
+/* --------------------------------------------------------------------------
+   Controls Badge Grid & Item Styling
+   -------------------------------------------------------------------------- */
+
+.controls-badge-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin: 1.75rem 0;
+}
+
+@media (min-width: 640px) {
+  .controls-badge-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.control-badge-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  background: var(--trade-panel, rgba(19, 26, 41, 0.7));
+  border: 1px solid var(--trade-panel-border, rgba(255, 255, 255, 0.1));
+  border-radius: var(--radius-md, 16px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.control-badge-item:hover {
+  border-color: var(--trade-blue, #2563eb);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.3),
+              0 0 15px rgba(37, 99, 235, 0.15);
+}
+
+/* --------------------------------------------------------------------------
+   Image / Icon Container (60% Width Allocation)
+   -------------------------------------------------------------------------- */
+
+/* Image handling */
+.badge-icon-img {
+  flex: 0 0 60%;
+  max-width: 60%;
+  height: 100px;
+  object-fit: contain;
+  border-radius: var(--radius-sm, 8px);
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
+  transition: transform 0.3s ease;
+}
+
+.control-badge-item:hover .badge-icon-img {
+  transform: scale(1.04);
+}
+
+/* Emoji / Text Icon fallback container taking up the 60% slot */
+.badge-icon {
+  flex: 0 0 60%;
+  max-width: 60%;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  background: var(--trade-input-bg, rgba(9, 13, 22, 0.5));
+  border: 1px dashed var(--trade-panel-border, rgba(255, 255, 255, 0.15));
+  border-radius: var(--radius-sm, 8px);
+  line-height: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Text Content Container (40% Width Allocation)
+   -------------------------------------------------------------------------- */
+
+.badge-content {
+  flex: 0 0 40%;
+  max-width: 40%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.35rem;
+  z-index: 2;
+}
+
+.badge-content strong {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--trade-white, #ffffff);
+  line-height: 1.25;
+  letter-spacing: -0.2px;
+}
+
+.badge-content span {
+  font-size: 0.8rem;
+  color: var(--trade-muted, #8e9bb0);
+  line-height: 1.4;
+}
+
+/* --------------------------------------------------------------------------
+   Special Rule: Items without Image or Icon (Item 4)
+   -------------------------------------------------------------------------- */
+
+.control-badge-item:not(:has(.badge-icon-img)):not(:has(.badge-icon)) .badge-content {
+  flex: 0 0 100%;
+  max-width: 100%;
+  padding: 0.5rem;
+}
+
+/* Quote & Caption Callout Box */
+.section-caption-box {
+  border-left: 4px solid var(--accent-primary);
+  background: var(--bg-input);
+  padding: 1rem 1.25rem;
+  border-radius: 0 12px 12px 0;
+  margin: 1.75rem 0;
+}
+
+.quote-caption {
+  font-style: italic;
+  color: var(--text-secondary);
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.section-caption-box.highlight-box {
+  border-left-color: var(--accent-secondary);
+}
+
+/* Action Rows & CTA Buttons */
+.action-row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.action-row.center-actions {
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.secondary-cta-btn {
+  background: transparent;
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.95rem 1.75rem;
+  border-radius: 12px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.secondary-cta-btn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  box-shadow: 0 0 12px var(--accent-glow);
 }

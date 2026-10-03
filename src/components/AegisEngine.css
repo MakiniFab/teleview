@@ -1,332 +1,378 @@
 /* ==========================================================================
-   AEGIS ENGINE - VIBRANT MODERN DYNAMIC LIGHT (FULL COMPLETE STYLESHEET)
-   White Base, Crystal Black Text & High-Octane RGB Accents
+   1. Theme Variables & Color Tokens
    ========================================================================== */
 
-/* Universal Dynamic Variables */
-.bot-card.premium-card {
-  --aegis-white-pure: #ffffff;
-  --aegis-white-glass: rgba(255, 255, 255, 0.9);
-  --aegis-border-soft: #e2e8f0;
-  --aegis-border-medium: #cbd5e1;
-  
-  --aegis-black-text: #050505;
-  --aegis-black-muted: #334155;
+:root,
+[data-theme="dark"] {
+  /* Surfaces & Backgrounds */
+  --card-bg: rgba(15, 23, 42, 0.85);
+  --card-border: rgba(30, 41, 59, 0.8);
+  --card-border-active: #00c076;
+  --input-bg: #090d16;
+  --input-border: #1e293b;
+  --console-bg: #050811;
 
-  /* High-Vibrancy RGB Palette */
-  --aegis-neon-green: #00d26a;
-  --aegis-neon-red: #ff3355;
-  --aegis-neon-blue: #0066ff;
-  
-  /* Vibrant Glow Effects */
-  --aegis-glow-blue: rgba(0, 102, 255, 0.25);
-  --aegis-glow-green: rgba(0, 210, 106, 0.35);
-  --aegis-glow-red: rgba(255, 51, 85, 0.3);
+  /* Typography */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
 
-  --aegis-radius-sm: 8px;
-  --aegis-radius-md: 14px;
-  --aegis-radius-lg: 22px;
+  /* Status & Accents (Dark: Neon Green & Disconnect Red Focus) */
+  --accent-brand: #2563eb;
+  --accent-green: #00c076;
+  --accent-green-glow: rgba(0, 192, 118, 0.35);
+  --accent-red: #ff3b30;
+  --accent-red-glow: rgba(255, 59, 48, 0.35);
+  --accent-amber: #f59e0b;
 
-  --aegis-font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
-  --aegis-font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+  /* Badges & Highlights */
+  --premium-badge-bg: linear-gradient(135deg, #00c076 0%, #2563eb 100%);
+  --account-tag-bg: rgba(37, 99, 235, 0.15);
+  --account-tag-border: rgba(37, 99, 235, 0.4);
+  --account-tag-text: #60a5fa;
+
+  /* Notice Banners */
+  --notice-bg: rgba(245, 158, 11, 0.1);
+  --notice-border: rgba(245, 158, 11, 0.3);
+  --notice-text: #fbbf24;
+
+  /* Buttons */
+  --btn-primary-bg: linear-gradient(135deg, #00c076 0%, #10b981 100%);
+  --btn-primary-text: #ffffff;
+  --btn-secondary-bg: rgba(30, 41, 59, 0.8);
+  --btn-secondary-text: #cbd5e1;
+  --btn-stop-bg: linear-gradient(135deg, #ff3b30 0%, #dc2626 100%);
+
+  /* Shadows & Glass */
+  --card-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+  --active-glow: 0 0 25px rgba(0, 192, 118, 0.25);
 }
 
-/* Base Card Shell with Dynamic Ambient Glow */
+[data-theme="light"] {
+  /* Surfaces & Backgrounds */
+  --card-bg: rgba(255, 255, 255, 0.92);
+  --card-border: rgba(226, 232, 240, 0.9);
+  --card-border-active: #f59e0b;
+  --input-bg: #f8fafc;
+  --input-border: #cbd5e1;
+  --console-bg: #1e293b;
+
+  /* Typography */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+
+  /* Status & Accents (Light: Vibrant Orange/Amber & Warm Accents) */
+  --accent-brand: #ea580c;
+  --accent-green: #16a34a;
+  --accent-green-glow: rgba(22, 163, 74, 0.2);
+  --accent-red: #dc2626;
+  --accent-red-glow: rgba(220, 38, 38, 0.2);
+  --accent-amber: #d97706;
+
+  /* Badges & Highlights */
+  --premium-badge-bg: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+  --account-tag-bg: rgba(234, 88, 12, 0.1);
+  --account-tag-border: rgba(234, 88, 12, 0.3);
+  --account-tag-text: #c2410c;
+
+  /* Notice Banners */
+  --notice-bg: rgba(245, 158, 11, 0.15);
+  --notice-border: rgba(217, 119, 6, 0.4);
+  --notice-text: #b45309;
+
+  /* Buttons */
+  --btn-primary-bg: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+  --btn-primary-text: #ffffff;
+  --btn-secondary-bg: #e2e8f0;
+  --btn-secondary-text: #334155;
+  --btn-stop-bg: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+
+  /* Shadows & Glass */
+  --card-shadow: 0 15px 35px -10px rgba(234, 88, 12, 0.12);
+  --active-glow: 0 0 25px rgba(245, 158, 11, 0.3);
+}
+
+/* ==========================================================================
+   2. Card Wrapper & Header Layout
+   ========================================================================== */
+
 .bot-card.premium-card {
-  box-sizing: border-box;
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: var(--aegis-white-pure) !important;
-  border: 2px solid var(--aegis-border-soft);
-  border-radius: var(--aegis-radius-lg);
-  font-family: var(--aegis-font-sans);
-  box-shadow: 
-    0 15px 35px -5px rgba(0, 102, 255, 0.08),
-    0 5px 15px rgba(0, 0, 0, 0.03);
   position: relative;
-  overflow: hidden;
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 100%;
+  max-width: 850px;
+  margin: 0 auto;
+  padding: 1.25rem;
+  border-radius: 18px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
 }
 
-/* Universal Black Text Override for Optimal Contrast */
-.bot-card.premium-card,
-.bot-card.premium-card * {
-  color: var(--aegis-black-text) !important;
-}
-
-/* Dynamic Live Pulsing Border when Trading */
+/* Dynamic Glowing State when Active Trading */
 .bot-card.premium-card.active-trading {
-  border-color: var(--aegis-neon-green) !important;
-  box-shadow: 
-    0 0 25px var(--aegis-glow-green),
-    0 15px 35px -5px rgba(0, 210, 106, 0.15);
-  animation: aegis-pulse-border 2s infinite alternate;
+  border-color: var(--card-border-active);
+  box-shadow: var(--card-shadow), var(--active-glow);
+  animation: pulseBorder 3s infinite alternate;
 }
 
-@keyframes aegis-pulse-border {
-  0% { box-shadow: 0 0 15px var(--aegis-glow-green); }
-  100% { box-shadow: 0 0 30px var(--aegis-glow-green); }
+@keyframes pulseBorder {
+  0% {
+    box-shadow: var(--card-shadow), 0 0 15px var(--accent-green-glow);
+  }
+  100% {
+    box-shadow: var(--card-shadow), 0 0 30px var(--accent-green-glow);
+  }
 }
 
-/* Header Section */
+/* Bot Header Structure */
 .bot-header {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding-bottom: 16px;
-  background-color: var(--aegis-white-pure) !important;
-  border-bottom: 2px dashed var(--aegis-border-soft);
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--card-border);
 }
 
 .bot-title-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0.35rem;
 }
 
 .title-with-badge {
   display: flex;
   align-items: center;
-  gap: 10px;
   flex-wrap: wrap;
+  gap: 0.65rem;
 }
 
 .title-with-badge h2 {
   margin: 0;
-  font-size: 1.4rem;
+  font-size: 1.35rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
 }
 
 .premium-badge {
-  font-family: var(--aegis-font-mono);
+  background: var(--premium-badge-bg);
+  color: #ffffff;
   font-size: 0.68rem;
-  font-weight: 900;
-  padding: 4px 10px;
-  background: linear-gradient(135deg, rgba(0, 102, 255, 0.1), rgba(0, 102, 255, 0.2)) !important;
-  border: 2px solid var(--aegis-neon-blue);
-  border-radius: var(--aegis-radius-sm);
-  letter-spacing: 0.08em;
+  font-weight: 800;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
-  box-shadow: 0 2px 8px var(--aegis-glow-blue);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .bot-subtitle {
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-size: 0.825rem;
+  color: var(--text-muted);
+  font-weight: 500;
 }
 
 .account-tag {
   align-self: flex-start;
-  font-family: var(--aegis-font-mono);
-  font-size: 0.78rem;
-  font-weight: 800;
-  padding: 6px 12px;
-  background-color: var(--aegis-white-pure) !important;
-  border: 2px solid var(--aegis-neon-blue);
-  border-radius: var(--aegis-radius-sm);
-  box-shadow: 0 2px 10px var(--aegis-glow-blue);
+  background: var(--account-tag-bg);
+  border: 1px solid var(--account-tag-border);
+  color: var(--account-tag-text);
+  font-size: 0.725rem;
+  font-weight: 700;
+  padding: 0.3rem 0.65rem;
+  border-radius: 8px;
+  letter-spacing: 0.5px;
 }
 
-/* Interactive Modern Banners */
+/* ==========================================================================
+   3. Notice & Explanation Banners
+   ========================================================================== */
+
 .bot-explanation {
-  margin-top: 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-.notice-highlight,
-.risk-warning-banner {
-  margin: 0;
-  padding: 12px 16px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  background-color: var(--aegis-white-pure) !important;
-  border-radius: var(--aegis-radius-md);
-  line-height: 1.5;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .notice-highlight {
-  border: 2px solid var(--aegis-neon-blue);
-  box-shadow: 0 4px 15px var(--aegis-glow-blue);
+  margin: 0;
+  padding: 0.65rem 0.85rem;
+  background: var(--notice-bg);
+  border: 1px solid var(--notice-border);
+  border-radius: 10px;
+  color: var(--notice-text);
+  font-size: 0.825rem;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
 .risk-warning-banner {
-  border: 2px solid var(--aegis-neon-red);
-  box-shadow: 0 4px 15px var(--aegis-glow-red);
+  margin: 0;
+  line-height: 1.45;
+  color: var(--text-secondary) !important; /* Overrides inline color safely */
 }
 
-.notice-highlight:hover,
-.risk-warning-banner:hover {
-  transform: translateY(-2px);
-}
+/* ==========================================================================
+   4. Form Grid & Input Controls (Mobile-First Overrides)
+   ========================================================================== */
 
-/* Parameters & Input Grid */
-.config-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 14px;
-  margin-top: 18px;
-}
-
+/* Reset Inline Style Displays for Mobile First */
+.config-grid.triple-field,
 .config-grid.dual-field {
-  grid-template-columns: 1fr;
+  display: grid !important;
+  grid-template-columns: 1fr !important; /* Stack vertically on small mobile */
+  gap: 0.85rem !important;
+  margin-bottom: 1.25rem !important;
 }
 
 .form-field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  background-color: var(--aegis-white-pure) !important;
-  padding: 14px;
-  border: 2px solid var(--aegis-border-medium);
-  border-radius: var(--aegis-radius-md);
-  transition: all 0.25s ease;
-}
-
-.form-field:focus-within {
-  border-color: var(--aegis-neon-blue);
-  box-shadow: 0 0 15px var(--aegis-glow-blue);
-  transform: translateY(-1px);
+  gap: 0.4rem;
 }
 
 .form-field label {
-  font-size: 0.75rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
 .form-field input,
 .form-field select {
-  background-color: var(--aegis-white-pure) !important;
-  border: 2px solid var(--aegis-border-soft);
-  font-family: var(--aegis-font-mono);
-  font-size: 1.1rem;
-  font-weight: 800;
-  padding: 10px 12px;
-  border-radius: var(--aegis-radius-sm);
-  outline: none;
   width: 100%;
+  height: 42px;
+  padding: 0 0.75rem;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  outline: none;
+  transition: all 0.2s ease;
   box-sizing: border-box;
-  -webkit-text-fill-color: var(--aegis-black-text) !important;
-  transition: border-color 0.2s ease;
 }
 
 .form-field input:focus,
 .form-field select:focus {
-  border-color: var(--aegis-neon-blue);
+  border-color: var(--accent-brand);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
 }
 
-/* Duration Selector Row */
-.duration-group {
+.form-field input:disabled,
+.form-field select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Special Split Duration Field Container */
+.form-field > div {
   display: flex;
-  gap: 8px;
+  gap: 0.5rem !important;
 }
 
-.duration-group input {
-  flex: 1;
-}
+/* ==========================================================================
+   5. Metrics Ribbon Section
+   ========================================================================== */
 
-.duration-group select {
-  width: 110px;
-}
-
-/* Vibrant Metrics Cards Grid */
 .metrics-ribbon {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-top: 20px;
-  width: 100%;
-  box-sizing: border-box;
+  grid-template-columns: repeat(2, 1fr); /* 2x Grid on mobile */
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
 }
 
 .metric-item {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  background-color: var(--aegis-white-pure) !important;
-  border: 2px solid var(--aegis-border-medium);
-  border-radius: var(--aegis-radius-md);
-  padding: 14px;
-  min-width: 0;
-  position: relative;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.metric-item:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
-  border-color: var(--aegis-neon-blue);
+  gap: 0.25rem;
 }
 
 .metric-label {
-  font-size: 0.72rem;
-  font-weight: 800;
+  font-size: 0.725rem;
+  font-weight: 600;
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 8px;
-  display: block;
+  letter-spacing: 0.4px;
 }
 
 .metric-value {
-  display: block;
-  font-family: var(--aegis-font-mono);
-  font-size: 1.15rem;
-  font-weight: 900;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  position: relative;
-  padding-left: 10px;
-  border-left: 4px solid var(--aegis-neon-blue);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
-/* RGB Dynamic Indicator Accents for Parameters */
 .metric-value.status-on {
-  border-left-color: var(--aegis-neon-green);
+  color: var(--accent-green);
+  text-shadow: 0 0 10px var(--accent-green-glow);
 }
 
 .metric-value.status-off {
-  border-left-color: var(--aegis-neon-red);
+  color: var(--text-muted);
 }
 
 .metric-value.highlight-win {
-  border-left-color: var(--aegis-neon-blue);
+  color: var(--accent-amber);
 }
 
-/* Action Control Buttons (Neon RGB High-Energy) */
+/* ==========================================================================
+   6. Control Action Buttons
+   ========================================================================== */
+
 .controls {
-  margin-top: 20px;
+  width: 100%;
+  margin-bottom: 1.25rem;
 }
 
 .dual-controls {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0.75rem;
+  width: 100%;
 }
 
 .start-btn,
 .stop-btn {
   width: 100%;
-  padding: 14px 20px;
-  font-family: var(--aegis-font-sans);
-  font-size: 0.95rem;
-  font-weight: 800;
+  height: 48px;
   border: none;
-  border-radius: var(--aegis-radius-md);
+  border-radius: 12px;
+  font-size: 0.925rem;
+  font-weight: 700;
   cursor: pointer;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
-  overflow: hidden;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.start-btn.premium-btn {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+}
+
+.start-btn.new-cycle-btn {
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+  border: 1px solid var(--card-border);
+}
+
+.stop-btn {
+  background: var(--btn-stop-bg);
+  color: #ffffff;
 }
 
 .start-btn:hover:not(:disabled),
@@ -337,157 +383,91 @@
 
 .start-btn:active:not(:disabled),
 .stop-btn:active:not(:disabled) {
-  transform: translateY(1px);
-}
-
-/* Vibrant Green Start Button */
-.start-btn.premium-btn {
-  background: linear-gradient(135deg, #00e676, #00b0ff) !important;
-  box-shadow: 0 6px 20px var(--aegis-glow-green);
-}
-
-/* Vibrant Blue Resume Button */
-.start-btn.resume-btn {
-  background: linear-gradient(135deg, #0066ff, #00d2ff) !important;
-  box-shadow: 0 6px 20px var(--aegis-glow-blue);
-}
-
-.start-btn.new-cycle-btn {
-  background-color: var(--aegis-white-pure) !important;
-  border: 2px solid var(--aegis-border-medium);
-}
-
-/* Vibrant Red Stop Button */
-.stop-btn {
-  background: linear-gradient(135deg, #ff3355, #ff6b00) !important;
-  box-shadow: 0 6px 20px var(--aegis-glow-red);
-}
-
-/* Maintain Crisp White Text on Glowing RGB Solid Buttons */
-.start-btn.premium-btn,
-.start-btn.resume-btn,
-.stop-btn {
-  color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  transform: translateY(0);
 }
 
 .start-btn:disabled,
 .stop-btn:disabled {
-  opacity: 0.35;
+  opacity: 0.5;
   cursor: not-allowed;
   transform: none;
-  box-shadow: none;
 }
 
 /* ==========================================================================
-   ENGINE TERMINAL CONSOLE STYLING
-   White background, crisp black log text, high-visibility RGB accents
+   7. Terminal Output Console
    ========================================================================== */
 
-/* Outer Terminal Container */
 .console-wrapper {
-  margin-top: 20px;
-  background-color: #ffffff !important;
-  border: 2px solid #0066ff; /* Vibrant Blue RGB Accent */
+  background: var(--console-bg);
+  border: 1px solid var(--card-border);
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 102, 255, 0.15);
   overflow: hidden;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.console-wrapper:hover {
-  border-color: #00d26a; /* Pulsing Green RGB Accent on Hover */
-  box-shadow: 0 10px 28px rgba(0, 210, 106, 0.2);
-}
-
-/* Header Bar */
 .console-title {
-  display: flex;
-  align-items: center;
-  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
-  font-size: 0.78rem;
-  font-weight: 800;
+  padding: 0.5rem 0.85rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--card-border);
+  font-size: 0.725rem;
+  font-weight: 700;
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  background: linear-gradient(90deg, rgba(0, 102, 255, 0.08), #ffffff) !important;
-  padding: 10px 14px;
-  color: #000000 !important;
-  border-bottom: 2px solid #cbd5e1;
+  letter-spacing: 0.5px;
 }
 
-/* Indicator Dot inside Header */
-.console-title::before {
-  content: '';
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  margin-right: 8px;
-  background-color: #00d26a; /* Green RGB Live Dot */
-  border-radius: 50%;
-  box-shadow: 0 0 8px rgba(0, 210, 106, 0.8);
-}
-
-/* Main Pre/Log Output Area */
 .logs-console {
   margin: 0;
-  padding: 14px;
-  height: 160px;
+  padding: 0.85rem;
+  max-height: 140px;
   overflow-y: auto;
-  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
-  font-size: 0.82rem;
-  font-weight: 700;
-  line-height: 1.6;
-  color: #000000 !important;
-  background-color: #ffffff !important;
+  font-family: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+  font-size: 0.775rem;
+  color: var(--accent-green);
+  line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
-  box-sizing: border-box;
 }
 
-/* Scrollbar Customization */
+/* Console Scrollbar Styling */
 .logs-console::-webkit-scrollbar {
-  width: 6px;
-}
-
-.logs-console::-webkit-scrollbar-track {
-  background-color: #ffffff;
+  width: 4px;
 }
 
 .logs-console::-webkit-scrollbar-thumb {
-  background-color: #0066ff; /* Blue RGB Scroll Thumb */
-  border-radius: 4px;
-}
-
-.logs-console::-webkit-scrollbar-thumb:hover {
-  background-color: #ff3355; /* Red RGB Hover Accent */
+  background: var(--card-border);
+  border-radius: 2px;
 }
 
 /* ==========================================================================
-   Responsive Breakpoints
+   8. Responsive Breakpoints (Tablet & Desktop Expansion)
    ========================================================================== */
 
 @media (min-width: 600px) {
   .bot-card.premium-card {
-    padding: 28px;
+    padding: 1.75rem;
   }
 
   .bot-header {
     flex-direction: row;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
   }
 
   .account-tag {
     align-self: center;
   }
 
+  /* Restore Responsive Columns on Larger Screens */
+  .config-grid.triple-field {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
   .config-grid.dual-field {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 
   .metrics-ribbon {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(5, 1fr);
   }
 
   .dual-controls {
@@ -496,28 +476,5 @@
 
   .dual-controls .start-btn {
     flex: 1;
-  }
-
-  .logs-console {
-    height: 190px;
-    font-size: 0.85rem;
-  }
-}
-
-@media (min-width: 900px) {
-  .title-with-badge h2 {
-    font-size: 1.6rem;
-  }
-
-  .metrics-ribbon {
-    grid-template-columns: repeat(5, 1fr);
-  }
-
-  .metric-item {
-    padding: 16px 14px;
-  }
-
-  .logs-console {
-    height: 230px;
   }
 }

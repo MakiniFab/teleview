@@ -1,136 +1,152 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useTrading } from "../context/TradingContext";
 import AegisEngine from "../components/AegisEngine";
 import NexusEngine from "../components/NexusEngine";
 import QuantumSpikePro from "../components/QuantumSpikePro";
-import TitanEngine from "../components/TitanEngine";
-// import TroyEngine from "../components/TroyEngine"; // Fifth Bot
 import "./BotsPage.css";
 
 const BOT_SUITE = [
-  { id: "aegis", name: "Aegis Matrix", isAccessible: true, badge: "ACTIVE (0.45)" },
-  { id: "nexus", name: "Nexus Pivot Engine", isAccessible: true, badge: "PREMIUM" },
-  { id: "quantum", name: "Quantum Spike Pro", isAccessible: true, badge: "PREMIUM" },
-  { id: "titan", name: "Quantum High-Frequency", isAccessible: true, badge: "PREMIUM" },
-  // { id: "troy", name: "The Troy Engine", isAccessible: true, badge: "ACTIVE (HYBRID)" },
+  { id: "aegis", name: "Aegis Matrix", isAccessible: true, badge: "PREMIUM", icon: "🛡️" },
+  { id: "nexus", name: "Nexus Pivot Engine", isAccessible: true, badge: "PREMIUM", icon: "🛡️" },
+  { id: "quantum", name: "Quantum Spike Pro", isAccessible: true, badge: "PREMIUM", icon: "🛡️" },
 ];
 
-export default function BotsPage() {
-  const { bot1State, bot2State, bot3State, bot4State, bot5State, activeBotId } = useTrading();
+const BOT_ENGINES = {
+  aegis: AegisEngine,
+  nexus: NexusEngine,
+  quantum: QuantumSpikePro,
+};
 
-  // Correct 1-to-1 mapping based on your context:
-  // bot1State -> aegis
-  // bot2State -> nexus
-  // bot3State -> quantum
-  // bot4State -> titan
-  // bot5State -> troy
-  const detectedActiveBotId = activeBotId || (
-    bot1State?.isTrading ? "aegis" :
-    bot2State?.isTrading ? "nexus" :
-    bot3State?.isTrading ? "quantum" :
-    bot4State?.isTrading ? "titan" :
-    bot5State?.isTrading ? "troy" : null
-  );
+const STORAGE_KEY = "last_active_bot_tab";
+
+export default function BotsPage() {
+  const { bot1State, bot2State, bot3State, activeBotId } = useTrading();
+
+  // Determine active bot session across context & individual state triggers
+  const detectedActiveBotId = useMemo(() => {
+    if (activeBotId) return activeBotId;
+    if (bot1State?.isTrading) return "aegis";
+    if (bot2State?.isTrading) return "nexus";
+    if (bot3State?.isTrading) return "quantum";
+    return null;
+  }, [activeBotId, bot1State?.isTrading, bot2State?.isTrading, bot3State?.isTrading]);
 
   const isAnyBotRunning = Boolean(detectedActiveBotId);
 
   // Tab persistence with localStorage fallback
   const [activeBotTab, setActiveBotTab] = useState(() => {
-    const savedTab = localStorage.getItem("last_active_bot_tab");
+    const savedTab = localStorage.getItem(STORAGE_KEY);
     return detectedActiveBotId || savedTab || "aegis";
   });
-  
 
-  // Keep active tab in sync and persist changes
+  // Keep active tab in sync when an active session starts
   useEffect(() => {
     if (detectedActiveBotId) {
       setActiveBotTab(detectedActiveBotId);
-      localStorage.setItem("last_active_bot_tab", detectedActiveBotId);
+      localStorage.setItem(STORAGE_KEY, detectedActiveBotId);
     }
   }, [detectedActiveBotId]);
 
-  const handleTabChange = (botId) => {
+  const handleTabChange = useCallback((botId) => {
     setActiveBotTab(botId);
-    localStorage.setItem("last_active_bot_tab", botId);
-  };
+    localStorage.setItem(STORAGE_KEY, botId);
+  }, []);
+
+  const currentBotObj = BOT_SUITE.find((bot) => bot.id === activeBotTab);
+  const ActiveEngineComponent = BOT_ENGINES[activeBotTab];
 
   return (
     <div className="bots-container">
-      <div className="bots-page-header">
-        <h1>Autom8 Bots Guide Center</h1>
+      {/* Header Section */}
+      <header className="bots-page-header">
+        <div className="header-title-row">
+          <h1>Autom8 Trading Bots Hub</h1>
+        </div>
         <p className="page-description">
-          Our automated bots are engineered specifically for short-interval contract execution across Deriv synthetic indices (ranging from <strong>Volatility 10 Index</strong> to <strong>Volatility 100 Index</strong>) operating on <strong>2-minute trade intervals</strong> over <strong>2-hour execution cycles</strong>. Select your preferred bot below to customize staking methods, risk boundaries, and execution strategies. Each bot connects directly via official WebSocket endpoints to execute CALL and PUT trades seamlessly.
+          Our trading bots are built to run automated strategies across Deriv synthetic indices, from the{" "}
+          <strong>Volatility 10 Index</strong> up to the <strong>Volatility 100 Index</strong>. Select a bot below, set your preferred stake, profit targets, and stop-loss parameters, and let the bot handle automated order execution.
         </p>
-        <p className="page-disclaimer">
-          ⚠️ <strong>Notice:</strong> Running automated trading algorithms on synthetic indices carries market risk and does not guarantee profits. We strongly advise testing all bot configurations on a <strong>Deriv Demo account</strong> first to understand execution behavior and strategy dynamics before deploying real funds.
-        </p>
-      </div>
+        <div className="page-disclaimer">
+          <span className="disclaimer-icon">⚠️</span>
+          <span>
+            <strong>Notice:</strong> Automated trading on synthetic indices involves risk. We strongly recommend testing your bot settings on a <strong>Deriv Demo account</strong> first before using real funds.
+          </span>
+        </div>
+      </header>
 
-      <div className="bots-workspace">
-        {/* Sidebar Menu */}
-        <aside className="bots-sidebar">
-          <div className="sidebar-title">Automated Bot Suite</div>
-          <nav className="bot-menu-list">
-            {BOT_SUITE.map((bot) => {
-              const isCurrentActiveSession = detectedActiveBotId === bot.id;
-              // Only lock tabs if a DIFFERENT bot is actively running
-              const isLockedByOther = isAnyBotRunning && !isCurrentActiveSession;
-              const isClickable = bot.isAccessible && !isLockedByOther;
+      {/* Bot Selection Cards Grid */}
+      <div className="bot-cards-grid" role="tablist" aria-label="Trading Bots">
+        {BOT_SUITE.map((bot) => {
+          const isCurrentActiveSession = detectedActiveBotId === bot.id;
+          const isLockedByOther = isAnyBotRunning && !isCurrentActiveSession;
+          const isClickable = bot.isAccessible && !isLockedByOther;
+          const isSelected = activeBotTab === bot.id;
 
-              return (
+          return (
+            <div
+              key={bot.id}
+              role="tab"
+              aria-selected={isSelected}
+              aria-disabled={!isClickable}
+              tabIndex={isClickable ? 0 : -1}
+              className={`bot-selection-card ${isSelected ? "selected-card" : ""} ${
+                isLockedByOther ? "card-disabled" : ""
+              }`}
+              onClick={() => isClickable && handleTabChange(bot.id)}
+              onKeyDown={(e) => {
+                if ((e.key === "Enter" || e.key === " ") && isClickable) {
+                  e.preventDefault();
+                  handleTabChange(bot.id);
+                }
+              }}
+            >
+              <div className="card-top-bar">
+                <span className="card-bot-icon">{bot.icon}</span>
+                <span
+                  className={`card-badge ${
+                    isCurrentActiveSession
+                      ? "badge-running"
+                      : bot.isAccessible
+                      ? "badge-active"
+                      : "badge-locked"
+                  }`}
+                >
+                  {isCurrentActiveSession ? "🟢 RUNNING" : bot.badge}
+                </span>
+              </div>
+
+              <h3 className="card-bot-title">{bot.name}</h3>
+
+              <div className="card-action-bar">
                 <button
-                  key={bot.id}
-                  className={`bot-menu-item ${
-                    activeBotTab === bot.id ? "active" : ""
-                  } ${!bot.isAccessible ? "locked" : ""} ${
-                    isLockedByOther ? "disabled-running" : ""
+                  type="button"
+                  className={`card-select-btn ${
+                    isCurrentActiveSession ? "btn-running" : isSelected ? "btn-active" : ""
                   }`}
                   disabled={!isClickable}
-                  onClick={() => {
-                    if (isClickable) {
-                      handleTabChange(bot.id);
-                    }
-                  }}
                 >
-                  <div className="menu-item-info">
-                    <span className="bot-name">{bot.name}</span>
-                    {!bot.isAccessible && <span className="lock-icon">🔒</span>}
-                  </div>
-                  <span
-                    className={`menu-badge ${
-                      bot.isAccessible ? "badge-active" : "badge-locked"
-                    }`}
-                  >
-                    {bot.badge}
-                  </span>
+                  {isCurrentActiveSession
+                    ? "Active Session"
+                    : isSelected
+                    ? "Selected Bot"
+                    : "Select Bot"}
                 </button>
-              );
-            })}
-          </nav>
-        </aside>
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
-        {/* Dynamic View Panel */}
+      {/* Workspace Area */}
+      <div className="bots-workspace">
         <main className="bot-main-content">
-          {activeBotTab === "aegis" && (
-            <AegisEngine disabled={Boolean(detectedActiveBotId && detectedActiveBotId !== "aegis")} />
-          )}
-          {activeBotTab === "nexus" && (
-            <NexusEngine disabled={Boolean(detectedActiveBotId && detectedActiveBotId !== "nexus")} />
-          )}
-          {activeBotTab === "quantum" && (
-            <QuantumSpikePro disabled={Boolean(detectedActiveBotId && detectedActiveBotId !== "quantum")} />
-          )}
-          {activeBotTab === "titan" && (
-            <TitanEngine disabled={Boolean(detectedActiveBotId && detectedActiveBotId !== "titan")} />
-          )}
-          {/* {activeBotTab === "troy" && (
-            <TroyEngine disabled={Boolean(detectedActiveBotId && detectedActiveBotId !== "troy")} />
-          )} */}
-
-          {/* Fallback for locked modules */}
-          {!BOT_SUITE.find((b) => b.id === activeBotTab)?.isAccessible && (
+          {currentBotObj?.isAccessible && ActiveEngineComponent ? (
+            <ActiveEngineComponent
+              disabled={Boolean(detectedActiveBotId && detectedActiveBotId !== activeBotTab)}
+            />
+          ) : (
             <div className="bot-card premium-card locked-placeholder">
-              <h2>Module Restricted</h2>
+              <h2>🔒 Module Restricted</h2>
               <p>This automated strategy requires an elevated subscription tier.</p>
             </div>
           )}

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 
 const API_BASE = "https://api.derivws.com";
-const APP_ID = "34sztETpkcwjcAayV9upz";
+const APP_ID = "34jtvKMAMvumIpF2SDF0D";
 const CURRENCY = "USD";
 const PAT_STORAGE_KEY = "deriv_pat_token";
 const PAT_EXPIRY_KEY = "deriv_pat_expiry";
@@ -216,6 +216,47 @@ export const TradingProvider = ({ children }) => {
   const engineRef4 = useRef(new StakingEngine({ minStake: 1.00, unitTargetProfit: 0.45 }));
   const engineRef5 = useRef(new StakingEngine({ minStake: 1.00, unitTargetProfit: 0.45 }));
 
+  // ==========================================
+  // BOT SESSION CLEAR / RESET FUNCTIONS
+  // ==========================================
+  const clearBot1Session = () => {
+    if (engineRef1.current) engineRef1.current.reset();
+    setBot1State({ isTrading: false, logs: [], history: [], contract: null });
+    localStorage.removeItem("aegis_bot_session");
+  };
+
+  const clearBot2Session = () => {
+    if (engineRef2.current) engineRef2.current.reset();
+    setBot2State({ isTrading: false, logs: [], history: [], contract: null });
+    localStorage.removeItem("nexus_bot_session");
+  };
+
+  const clearBot3Session = () => {
+    if (engineRef3.current) engineRef3.current.reset();
+    setBot3State({ isTrading: false, logs: [], history: [], contract: null });
+    localStorage.removeItem("quantum_bot_session");
+  };
+
+  const clearBot4Session = () => {
+    if (engineRef4.current) engineRef4.current.reset();
+    setBot4State({ isTrading: false, logs: [], history: [], contract: null });
+    localStorage.removeItem("titan_bot_session");
+  };
+
+  const clearBot5Session = () => {
+    if (engineRef5.current) engineRef5.current.reset();
+    setBot5State({ isTrading: false, logs: [], history: [], contract: null });
+    localStorage.removeItem("troy_bot_session");
+  };
+
+  const clearAllBotSessions = () => {
+    clearBot1Session();
+    clearBot2Session();
+    clearBot3Session();
+    clearBot4Session();
+    clearBot5Session();
+  };
+
   const saveTokenWithExpiry = (token) => {
     localStorage.setItem(PAT_STORAGE_KEY, token);
     localStorage.setItem(PAT_EXPIRY_KEY, (Date.now() + SIX_HOURS_MS).toString());
@@ -358,6 +399,13 @@ export const TradingProvider = ({ children }) => {
         activeBotId,
         setActiveBotId,
         stopAllBots,
+        // Clear functions for bots
+        clearBot1Session,
+        clearBot2Session,
+        clearBot3Session,
+        clearBot4Session,
+        clearBot5Session,
+        clearAllBotSessions,
         // Bot 1 Context (Aegis)
         bot1State, setBot1State, wsRef1, engineRef1,
         // Bot 2 Context (Nexus)

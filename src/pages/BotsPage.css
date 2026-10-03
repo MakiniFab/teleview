@@ -1,367 +1,385 @@
-/* ==========================================
-   CSS VARIABLES: THEME DEFINITIONS
-   ========================================== */
+/* ==========================================================================
+   Autom8 Trading Bots Hub - Dual Theme Stylesheet
+   ========================================================================== */
 
-/* Default Dark Theme (or html[data-theme="dark"]) */
+/* --------------------------------------------------------------------------
+   1. Light Theme (Warm Orange & Gold Palette)
+   -------------------------------------------------------------------------- */
 :root,
-html[data-theme="dark"] {
-  --bg-main: #0d0f17;
-  --bg-card: #161b26;
-  --bg-sidebar: #121622;
-  --bg-hover: #1e2538;
-  --bg-active: #242d42;
-  --bg-disclaimer: rgba(234, 179, 8, 0.08);
-
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-
-  --border-color: #262f45;
-  --border-active: #10b981;
-
-  --accent-primary: #3b82f6;
-  --accent-glow: rgba(59, 130, 246, 0.25);
+[data-theme="light"] {
+  --bg-primary: #fffcf8;
+  --bg-surface: #ffffff;
+  --bg-subtle: #fef3c7; /* Subtle amber tint */
   
-  /* Green & Red Theme System */
-  --trade-green: #10b981;
-  --trade-green-hover: #059669;
-  --trade-green-bg: rgba(16, 185, 129, 0.12);
-  --trade-green-border: rgba(16, 185, 129, 0.35);
-
-  --trade-red: #ef4444;
-  --trade-red-hover: #dc2626;
-  --trade-red-bg: rgba(239, 68, 68, 0.12);
-  --trade-red-border: rgba(239, 68, 68, 0.35);
-
-  --badge-active-bg: var(--trade-green-bg);
-  --badge-active-text: var(--trade-green);
-  --badge-locked-bg: var(--trade-red-bg);
-  --badge-locked-text: var(--trade-red);
-
-  --warning-border: #eab308;
-  --warning-text: #fde047;
-
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+  --text-primary: #1c1917;
+  --text-secondary: #78350f;
+  --text-muted: #a16207;
+  
+  --border-color: #fde68a;
+  --border-focus: #f59e0b;
+  
+  /* Primary Accents: Orange & Gold */
+  --primary-accent: #f97316;
+  --primary-accent-hover: #ea580c;
+  --primary-accent-light: #fff7ed;
+  
+  /* Status Colors */
+  --success-color: #d97706; /* Gold/Amber active accent */
+  --success-bg: #fef3c7;
+  --success-border: #fcd34d;
+  
+  --warning-bg: #fff7ed;
+  --warning-border: #fdba74;
+  --warning-text: #c2410c;
+  
+  --locked-bg: #f5f5f4;
+  --locked-text: #a8a29e;
+  
+  --card-shadow: 0 2px 4px 0 rgba(249, 115, 22, 0.06);
+  --card-shadow-hover: 0 10px 20px -3px rgba(249, 115, 22, 0.15);
+  --card-shadow-selected: 0 0 0 2px var(--primary-accent), 0 8px 16px -4px rgba(249, 115, 22, 0.2);
 }
 
-/* Light Theme Overrides */
-html[data-theme="light"] {
-  --bg-main: #f8fafc;
-  --bg-card: #ffffff;
-  --bg-sidebar: #f1f5f9;
-  --bg-hover: #e2e8f0;
-  --bg-active: #e2e8f0;
-  --bg-disclaimer: #fffbeeb3;
-
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
-
-  --border-color: #e2e8f0;
-  --border-active: #059669;
-
-  --accent-primary: #2563eb;
-  --accent-glow: rgba(16, 185, 129, 0.15);
-
-  /* Green & Red Theme System */
-  --trade-green: #059669;
-  --trade-green-hover: #047857;
-  --trade-green-bg: #d1fae5;
-  --trade-green-border: rgba(5, 150, 105, 0.35);
-
-  --trade-red: #dc2626;
-  --trade-red-hover: #b91c1c;
-  --trade-red-bg: #fee2e2;
-  --trade-red-border: rgba(220, 38, 38, 0.35);
-
-  --badge-active-bg: var(--trade-green-bg);
-  --badge-active-text: var(--trade-green);
-  --badge-locked-bg: var(--trade-red-bg);
-  --badge-locked-text: var(--trade-red);
-
-  --warning-border: #d97706;
-  --warning-text: #92400e;
-
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.05);
+/* --------------------------------------------------------------------------
+   2. Dark Theme (Trading Engine Matrix: Neon Green & Red Palette)
+   -------------------------------------------------------------------------- */
+[data-theme="dark"] {
+  --bg-primary: #090d16;
+  --bg-surface: #111827;
+  --bg-subtle: #1f2937;
+  
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  
+  --border-color: #1f2937;
+  --border-focus: #10b981;
+  
+  /* Primary Accents: Electric Green */
+  --primary-accent: #10b981;
+  --primary-accent-hover: #059669;
+  --primary-accent-light: rgba(16, 185, 129, 0.12);
+  
+  /* Status Colors: Green (Running/Active) & Red (Locked/Restricted) */
+  --success-color: #10b981;
+  --success-bg: rgba(16, 185, 129, 0.15);
+  --success-border: rgba(16, 185, 129, 0.4);
+  
+  --warning-bg: rgba(239, 68, 68, 0.1); /* Red warning tint */
+  --warning-border: rgba(239, 68, 68, 0.3);
+  --warning-text: #fca5a5;
+  
+  --locked-bg: rgba(239, 68, 68, 0.05);
+  --locked-text: #ef4444; /* Vivid Red for locked/restricted modules */
+  
+  --card-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.4);
+  --card-shadow-hover: 0 10px 20px -3px rgba(16, 185, 129, 0.2);
+  --card-shadow-selected: 0 0 0 2px var(--primary-accent), 0 8px 16px -4px rgba(16, 185, 129, 0.3);
 }
 
-/* ==========================================
-   MOBILE-FIRST BASE STYLES
-   ========================================== */
-
-* {
-  box-sizing: border-box;
+/* Fallback for System Dark Preference if data-theme is not explicitly set */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-primary: #090d16;
+    --bg-surface: #111827;
+    --bg-subtle: #1f2937;
+    
+    --text-primary: #f9fafb;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    
+    --border-color: #1f2937;
+    --border-focus: #10b981;
+    
+    --primary-accent: #10b981;
+    --primary-accent-hover: #059669;
+    --primary-accent-light: rgba(16, 185, 129, 0.12);
+    
+    --success-color: #10b981;
+    --success-bg: rgba(16, 185, 129, 0.15);
+    --success-border: rgba(16, 185, 129, 0.4);
+    
+    --warning-bg: rgba(239, 68, 68, 0.1);
+    --warning-border: rgba(239, 68, 68, 0.3);
+    --warning-text: #fca5a5;
+    
+    --locked-bg: rgba(239, 68, 68, 0.05);
+    --locked-text: #ef4444;
+    
+    --card-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.4);
+    --card-shadow-hover: 0 10px 20px -3px rgba(16, 185, 129, 0.2);
+    --card-shadow-selected: 0 0 0 2px var(--primary-accent), 0 8px 16px -4px rgba(16, 185, 129, 0.3);
+  }
 }
 
+/* Common Variables */
+:root {
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+}
+
+/* --------------------------------------------------------------------------
+   3. Component Rules
+   -------------------------------------------------------------------------- */
+
+/* Layout Container */
 .bots-container {
-  min-height: 100vh;
-  background-color: var(--bg-main);
-  color: var(--text-primary);
-  padding: 0.75rem;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  min-height: 100vh;
+  box-sizing: border-box;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
 }
 
 /* Header Section */
 .bots-page-header {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-left: 4px solid var(--trade-green);
-  border-radius: 10px;
-  padding: 0.85rem;
-  margin-bottom: 0.85rem;
-  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
 
-.bots-page-header h1 {
-  font-size: 1.15rem;
-  font-weight: 700;
-  margin: 0 0 0.35rem 0;
+.header-title-row h1 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin: 0;
   color: var(--text-primary);
-  letter-spacing: -0.02em;
 }
 
 .page-description {
-  font-size: 0.8rem;
-  line-height: 1.4;
+  font-size: 1rem;
+  line-height: 1.6;
   color: var(--text-secondary);
-  margin: 0 0 0.65rem 0;
-}
-
-.page-disclaimer {
-  font-size: 0.75rem;
-  line-height: 1.35;
-  background-color: var(--bg-disclaimer);
-  border-left: 3px solid var(--warning-border);
-  color: var(--warning-text);
-  padding: 0.5rem 0.65rem;
-  border-radius: 0 6px 6px 0;
+  max-width: 850px;
   margin: 0;
 }
 
-/* Workspace Layout */
-.bots-workspace {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-}
-
-/* Mobile Vertical Sidebar Menu */
-.bots-sidebar {
-  background: var(--bg-sidebar);
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 0.65rem;
-}
-
-.sidebar-title {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-  margin-bottom: 0.5rem;
-}
-
-/* Vertical List Layout for Mobile */
-.bot-menu-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-  width: 100%;
-}
-
-/* Menu Items */
-.bot-menu-item {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  padding: 0.55rem 0.75rem;
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.2s ease-in-out;
-}
-
-.bot-menu-item:hover:not(:disabled) {
-  background: var(--bg-hover);
-  border-color: var(--trade-green-border);
-}
-
-.bot-menu-item.active {
-  background: var(--trade-green-bg);
-  border-color: var(--trade-green);
-  box-shadow: 0 0 0 1px var(--trade-green), 0 0 10px rgba(16, 185, 129, 0.2);
-}
-
-.bot-menu-item.active .bot-name {
-  color: var(--trade-green);
-}
-
-/* Locked / Running Disables State with Red Highlights */
-.bot-menu-item.disabled-running,
-.bot-menu-item:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  border-color: var(--trade-red-border);
-  background-color: var(--trade-red-bg);
-}
-
-.bot-menu-item.disabled-running .bot-name {
-  color: var(--trade-red);
-}
-
-.menu-item-info {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.bot-name {
-  font-size: 0.8rem;
-  font-weight: 600;
+.page-description strong {
   color: var(--text-primary);
-  white-space: nowrap;
+  font-weight: 600;
 }
 
-.lock-icon {
-  font-size: 0.75rem;
-  color: var(--trade-red);
+/* Disclaimer / Warning Box */
+.page-disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background-color: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+  border-radius: var(--radius-md);
+  color: var(--warning-text);
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 
-/* Badges */
-.menu-badge {
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 0.15rem 0.4rem;
-  border-radius: 4px;
-  letter-spacing: 0.02em;
+.disclaimer-icon {
+  font-size: 1.125rem;
   flex-shrink: 0;
 }
 
+/* Cards Grid */
+.bot-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
+/* Individual Bot Card */
+.bot-selection-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--card-shadow);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+}
+
+.bot-selection-card:hover:not(.card-disabled) {
+  border-color: var(--border-focus);
+  box-shadow: var(--card-shadow-hover);
+  transform: translateY(-2px);
+}
+
+.bot-selection-card:focus-visible {
+  box-shadow: 0 0 0 3px var(--border-focus);
+}
+
+/* Selected Card State */
+.bot-selection-card.selected-card {
+  background-color: var(--primary-accent-light);
+  border-color: var(--primary-accent);
+  box-shadow: var(--card-shadow-selected);
+}
+
+/* Disabled/Locked Card State */
+.bot-selection-card.card-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bot-selection-card.card-disabled:hover {
+  transform: none;
+  box-shadow: var(--card-shadow);
+  border-color: var(--border-color);
+}
+
+/* Card Top Bar & Badges */
+.card-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.card-bot-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background-color: var(--bg-subtle);
+  border-radius: var(--radius-md);
+  font-size: 1.25rem;
+}
+
+.card-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+
 .badge-active {
-  background: var(--badge-active-bg);
-  color: var(--badge-active-text);
-  border: 1px solid var(--trade-green-border);
+  background-color: var(--primary-accent-light);
+  color: var(--primary-accent);
+}
+
+.badge-running {
+  background-color: var(--success-bg);
+  color: var(--success-color);
+  border: 1px solid var(--success-border);
+  animation: pulse-glow 2s infinite;
 }
 
 .badge-locked {
-  background: var(--badge-locked-bg);
-  color: var(--badge-locked-text);
-  border: 1px solid var(--trade-red-border);
+  background-color: var(--locked-bg);
+  color: var(--locked-text);
+  border: 1px solid var(--locked-text);
 }
 
-/* Main Content Area */
+/* Card Content & Action Bar */
+.card-bot-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0 0 1.25rem 0;
+  color: var(--text-primary);
+}
+
+.card-action-bar {
+  margin-top: auto;
+}
+
+.card-select-btn {
+  width: 100%;
+  padding: 0.625rem 1rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-subtle);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.bot-selection-card:hover:not(.card-disabled) .card-select-btn {
+  background-color: var(--primary-accent);
+  color: #ffffff;
+}
+
+.card-select-btn.btn-active {
+  background-color: var(--primary-accent);
+  color: #ffffff;
+}
+
+.card-select-btn.btn-running {
+  background-color: var(--success-color);
+  color: #ffffff;
+}
+
+.card-select-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Workspace Area */
+.bots-workspace {
+  margin-top: 2rem;
+  width: 100%;
+}
+
 .bot-main-content {
-  flex: 1;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 0.85rem;
-  box-shadow: var(--shadow-sm);
-  min-height: 250px;
+  width: 100%;
 }
 
-/* Placeholder for Restricted Modules */
+/* Locked / Restriction Card Placeholder */
 .locked-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 4rem 2rem;
   text-align: center;
-  padding: 2.5rem 0.85rem;
-  color: var(--text-secondary);
-  background: var(--trade-red-bg);
-  border: 1px dashed var(--trade-red-border);
-  border-radius: 8px;
+  background-color: var(--bg-surface);
+  border: 2px dashed var(--locked-text);
+  border-radius: var(--radius-lg);
 }
 
 .locked-placeholder h2 {
-  font-size: 1.1rem;
-  margin-bottom: 0.4rem;
-  color: var(--trade-red);
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  color: var(--locked-text);
 }
 
-/* ==========================================
-   DESKTOP & LARGER SCREENS
-   ========================================== */
+.locked-placeholder p {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 400px;
+}
 
-@media (min-width: 768px) {
-  .bots-container {
-    padding: 1.75rem;
-    max-width: 1400px;
-    margin: 0 auto;
+/* Pulse Glow Animation */
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
   }
-
-  .bots-page-header {
-    padding: 1.5rem;
-    border-radius: 12px;
+  70% {
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
   }
-
-  .bots-page-header h1 {
-    font-size: 1.65rem;
-  }
-
-  .page-description {
-    font-size: 0.95rem;
-  }
-
-  .page-disclaimer {
-    font-size: 0.875rem;
-    padding: 0.65rem;
-    border-radius: 0 8px 8px 0;
-  }
-
-  /* Desktop Two-Column Layout */
-  .bots-workspace {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 1.5rem;
-    align-items: start;
-  }
-
-  .bots-sidebar {
-    padding: 1rem;
-    border-radius: 12px;
-    position: sticky;
-    top: 1.5rem;
-  }
-
-  .sidebar-title {
-    font-size: 0.75rem;
-    margin-bottom: 0.6rem;
-  }
-
-  .bot-menu-list {
-    gap: 0.6rem;
-  }
-
-  .bot-menu-item {
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-  }
-
-  .bot-name {
-    font-size: 0.85rem;
-  }
-
-  .bot-main-content {
-    padding: 1.5rem;
-    border-radius: 12px;
-    min-height: 300px;
-  }
-
-  .locked-placeholder {
-    padding: 3rem 1rem;
-  }
-
-  .locked-placeholder h2 {
-    font-size: 1.25rem;
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
   }
 }

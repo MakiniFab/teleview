@@ -5,170 +5,160 @@ export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    subject: "",
+    topic: "general",
     message: "",
   });
 
   const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-
-    // Simulate form submission
-    setTimeout(() => {
-      setLoading(false);
-      setSubmitted(true);
-      setFormData({ name: "", email: "", subject: "", message: "" });
-    }, 1000);
+    // Logic for form submission / API endpoint goes here
+    setSubmitted(true);
   };
 
   return (
-    <div className="contact-container">
-      <div className="contact-wrapper">
-        {/* Header Section */}
-        <header className="contact-header">
-          <span className="brand-badge">A Division of Fab Software Solutions — Mombasa</span>
-          <h2>Contact Us</h2>
-          <p className="subtitle">
-            Have questions regarding our trading bots or platform integrations? Reach out to our technical team in Mombasa for direct support.
-          </p>
-        </header>
+    <div className="contacts-container">
+      {/* Hero Header */}
+      <header className="contacts-header">
+        <span className="badge-pill">24/7 Support & Community</span>
+        <h1>How Can We Help You?</h1>
+        <p>
+          Need help with bot setup, deposits, withdrawals, market analysis, or
+          general inquiries? Reach out to us directly or join our community.
+        </p>
+      </header>
 
-        {/* Info & Form Grid Layout */}
-        <div className="contact-content">
-          {/* Company Contact Details */}
-          <div className="info-cards-grid">
-            <div className="info-card">
-              <div className="info-icon">🏢</div>
-              <div className="info-details">
-                <span className="info-label">Parent Company</span>
-                <span className="info-value">Fab Software Solutions</span>
-              </div>
-            </div>
+      {/* Direct Contact Cards */}
+      <div className="quick-contact-grid">
+        <div className="contact-card">
+          <div className="card-icon">💬</div>
+          <h3>Telegram Support</h3>
+          <p>Instant answers for deposits, bot setup & trading signals.</p>
+          <a
+            href="https://t.me/your_telegram_handle"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="action-btn telegram-btn"
+          >
+            Chat on Telegram
+          </a>
+        </div>
 
-            <a href="mailto:info@fabsoftwaresolutions.example.com" className="info-card link-card">
-              <div className="info-icon">✉️</div>
-              <div className="info-details">
-                <span className="info-label">Email Us</span>
-                <span className="info-value">info@fabsoftwaresolutions.com</span>
-              </div>
-            </a>
+        <div className="contact-card">
+          <div className="card-icon">📱</div>
+          <h3>WhatsApp Help Desk</h3>
+          <p>Direct assistance for account configuration and funding.</p>
+          <a
+            href="https://wa.me/your_whatsapp_number"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="action-btn whatsapp-btn"
+          >
+            Message on WhatsApp
+          </a>
+        </div>
 
-            <a href="tel:+254700000000" className="info-card link-card">
-              <div className="info-icon">📞</div>
-              <div className="info-details">
-                <span className="info-label">Phone Support</span>
-                <span className="info-value">+254 (0) 704 800 808</span>
-              </div>
-            </a>
-
-            {/* Sample Social & Support Links */}
-            <div className="social-links-wrapper">
-              <span className="info-label">Connect & Community</span>
-              <div className="social-buttons">
-                <a
-                  href="https://telegram.org"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="social-btn telegram"
-                >
-                  Telegram Channel
-                </a>
-                <a
-                  href="https://whatsapp.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="social-btn whatsapp"
-                >
-                  WhatsApp Support
-                </a>
-                <a
-                  href="https://github.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="social-btn github"
-                >
-                  GitHub Org
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Direct Message Form */}
-          <div className="form-card">
-            {submitted && (
-              <div className="success-banner">
-                Thank you! Your inquiry has been forwarded to Fab Software Solutions support desk.
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="contact-form">
-              <div className="form-group">
-                <label htmlFor="name">Full Name</label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  placeholder="e.g. John Doe"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="email">Email Address</label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  placeholder="name@example.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="subject">Subject</label>
-                <input
-                  type="text"
-                  id="subject"
-                  name="subject"
-                  placeholder="e.g. Bot License / Integration Support"
-                  value={formData.subject}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="message">Message</label>
-                <textarea
-                  id="message"
-                  name="message"
-                  rows="5"
-                  placeholder="Write your message here..."
-                  value={formData.message}
-                  onChange={handleChange}
-                  required
-                ></textarea>
-              </div>
-
-              <button type="submit" className="submit-btn" disabled={loading}>
-                {loading ? "Transmitting..." : "Send Message"}
-              </button>
-            </form>
-          </div>
+        <div className="contact-card">
+          <div className="card-icon">✉️</div>
+          <h3>Email Support</h3>
+          <p>Detailed technical queries and account assistance.</p>
+          <a href="mailto:support@yourdomain.com" className="action-btn email-btn">
+            Send an Email
+          </a>
         </div>
       </div>
+
+      {/* Video Tutorials & Social Section */}
+      <div className="social-tutorials-box">
+        <h3>🎥 Watch Video Tutorials & Setup Guides</h3>
+        <p>Join our friendly trading community for quick video demos, bot setup guides, and tips:</p>
+        <div className="social-links-grid">
+          <a
+            href="https://www.tiktok.com/@olinoh?lang=en"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="social-link"
+            title="TikTok Tutorials"
+          >
+            <img src="/tiktok.png" alt="TikTok" className="social-icon" />
+          </a>
+          <a
+            href="https://www.youtube.com/@olinoh"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="social-link"
+            title="YouTube Demos"
+          >
+            <img src="/youtube.png" alt="YouTube" className="social-icon" />
+          </a>
+          <a
+            href="https://www.instagram.com/@olinoh"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="social-link"
+            title="Instagram Updates"
+          >
+            <img src="/insta.jfif" alt="Instagram" className="social-icon" />
+          </a>
+          <a
+            href="https://x.com/@olinoh"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="social-link"
+            title="X (Twitter) Announcements"
+          >
+            <img src="/x.png" alt="X (Twitter)" className="social-icon" />
+          </a>
+          <a
+            href="https://t.me/olinoh"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="social-link"
+            title="Telegram Channel"
+          >
+            <img src="/telegram.png" alt="Telegram" className="social-icon" />
+          </a>
+        </div>
+      </div>
+
+      {/* Interactive Form & FAQ Grid */}
+      <div className="form-faq-section">
+        {/* Quick Assistance Checklist */}
+        <div className="support-info-box">
+          <h2>Popular Help Topics</h2>
+          <ul className="info-list">
+            <li>
+              <strong>⚙️ Bot Setup:</strong> Need assistance configuring Aegis, Nexus, or QuantumSpikePro? Check our video guides or contact support.
+            </li>
+            <li>
+              <strong>💳 Deposits & Withdrawals:</strong> Get help funding your Deriv account via M-Pesa, Agent, Card, or Crypto.
+            </li>
+            <li>
+              <strong>📊 Market Selection:</strong> Learn which Synthetic Index markets suit active strategies best during peak hours.
+            </li>
+            <li>
+              <strong>🛡️ Risk Management:</strong> Guidelines on optimizing Base Stake, Profit Ratio, and Stop Loss settings.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      {/* Section Caption Banner */}
+      <section className="section-caption-wrapper">
+        <div className="section-caption-box">
+          <p className="quote-caption">
+            "Set your bot before breakfast. Check your results after dinner."
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

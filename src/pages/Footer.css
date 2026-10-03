@@ -1,0 +1,138 @@
+/* ==========================================
+   APP FOOTER (MOBILE-FIRST CSS)
+   ========================================== */
+
+.app-footer {
+  background-color: var(--bg-header, #151a24);
+  border-top: 1px solid var(--border-color, #242c3d);
+  color: var(--text-secondary, #94a3b8);
+  padding: 2rem 1rem 1rem 1rem;
+  margin-top: auto;
+  font-family: inherit;
+}
+
+.footer-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Footer Columns */
+.footer-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-brand-col {
+  gap: 0.5rem;
+}
+
+.footer-brand-logo {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text-primary, #f8fafc);
+  text-decoration: none;
+  display: inline-block;
+  transition: opacity 0.2s ease;
+}
+
+.footer-brand-logo:hover {
+  opacity: 0.85;
+}
+
+.brand-accent {
+  color: var(--accent-primary, #10b981);
+}
+
+.footer-brand-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #94a3b8);
+  line-height: 1.45;
+  margin: 0;
+  max-width: 320px;
+}
+
+.footer-col-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-primary, #f8fafc);
+  margin: 0 0 0.75rem 0;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.footer-links a {
+  color: var(--text-secondary, #94a3b8);
+  text-decoration: none;
+  font-size: 0.825rem;
+  transition: color 0.2s ease, transform 0.2s ease;
+  display: inline-block;
+}
+
+.footer-links a:hover,
+.footer-links a.active {
+  color: var(--accent-primary, #10b981);
+  transform: translateX(2px);
+}
+
+/* Footer Bottom Section */
+.footer-bottom {
+  max-width: 1200px;
+  margin: 1.75rem auto 0 auto;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-subtle, #1c2331);
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-muted, #64748b);
+}
+
+.footer-bottom p {
+  margin: 0;
+}
+
+/* ==========================================
+   DESKTOP & LARGER SCREENS (≥ 768px)
+   ========================================== */
+
+@media (min-width: 768px) {
+  .app-footer {
+    padding: 3rem 2rem 1.5rem 2rem;
+  }
+
+  .footer-inner {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.25fr;
+    gap: 2.5rem;
+  }
+
+  .footer-brand-logo {
+    font-size: 1.5rem;
+  }
+
+  .footer-brand-desc {
+    font-size: 0.85rem;
+  }
+
+  .footer-col-title {
+    font-size: 0.9rem;
+  }
+
+  .footer-links a {
+    font-size: 0.875rem;
+  }
+
+  .footer-bottom {
+    margin-top: 2.5rem;
+  }
+}

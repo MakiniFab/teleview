@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useTrading } from "../context/TradingContext";
-import "./TitanEngine.css";
+import "./AegisEngine.css";
 
 const API_BASE = "https://api.derivws.com";
-const APP_ID = "34sztETpkcwjcAayV9upz";
+const APP_ID = "34jtvKMAMvumIpF2SDF0D";
 const CURRENCY = "USD";
 const STORAGE_KEY = "aegis_engine_session_v1";
 
@@ -55,6 +55,24 @@ export default function AegisEngine({ disabled = false }) {
   const [durationUnit, setDurationUnit] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     return saved ? JSON.parse(saved).durationUnit || "m" : "m";
+  });
+
+  // Take Profit (Default: 5 * minStake)
+  const [takeProfit, setTakeProfit] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved && JSON.parse(saved).takeProfit !== undefined) {
+      return JSON.parse(saved).takeProfit;
+    }
+    return minStake * 5;
+  });
+
+  // Stop Loss (Default: 100 * minStake)
+  const [stopLoss, setStopLoss] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved && JSON.parse(saved).stopLoss !== undefined) {
+      return JSON.parse(saved).stopLoss;
+    }
+    return minStake * 100;
   });
 
   // UI Counters directly from local storage if available
@@ -110,7 +128,7 @@ export default function AegisEngine({ disabled = false }) {
           currentBlockSymbolRef.current = parsed.currentBlockSymbol;
         }
 
-        // ✅ Restore saved trade history into state
+        // Restore saved trade history into state
         if (Array.isArray(parsed.history) && parsed.history.length > 0) {
           setBot1State((prev) => ({
             ...prev,
@@ -137,13 +155,15 @@ export default function AegisEngine({ disabled = false }) {
       profitRatio: Number(profitRatio),
       durationValue: Number(durationValue),
       durationUnit,
+      takeProfit: Number(takeProfit),
+      stopLoss: Number(stopLoss),
       bankedWinsCount: updatedWins,
       totalSettledCount: updatedSettled,
       settledIds: Array.from(settledIdsRef.current),
       lossStreak: lossStreakRef.current,
       totalSessionProfit: updatedProfit,
       currentBlockSymbol: currentBlockSymbolRef.current,
-      history: bot1State.history, // ✅ Persist history array to localStorage
+      history: bot1State.history, // Persist history array to localStorage
       engineState: engineRef1?.current?.exportState
         ? engineRef1.current.exportState()
         : null,
@@ -188,6 +208,10 @@ export default function AegisEngine({ disabled = false }) {
   const handleStakeChange = (e) => {
     const val = Math.max(1.0, parseFloat(e.target.value) || 1.0);
     setMinStake(val);
+    
+    // Dynamically recalculate default limits based on the new base stake
+    setTakeProfit(val * 5);
+    setStopLoss(val * 100);
   };
 
   const handleRatioChange = (e) => {
@@ -215,6 +239,16 @@ export default function AegisEngine({ disabled = false }) {
       if (unitConfig.max && val > unitConfig.max) return setDurationValue(unitConfig.max);
     }
     setDurationValue(val);
+  };
+
+  const handleTakeProfitChange = (e) => {
+    const val = Math.max(0, parseFloat(e.target.value) || 0);
+    setTakeProfit(val);
+  };
+
+  const handleStopLossChange = (e) => {
+    const val = Math.max(0, parseFloat(e.target.value) || 0);
+    setStopLoss(val);
   };
 
   // Convert contract duration into estimated timeout milliseconds
@@ -314,8 +348,18 @@ export default function AegisEngine({ disabled = false }) {
     setBot1State((prev) => ({
       ...prev,
       logs: [],
-      history: prev.history, // ✅ Keep historical trade records intact across blocks
+      history: [], // Reset trade history array in TradingContext for a fresh cycle
       contract: null,
+      wins: 0,
+      losses: 0,
+      totalTrades: 0,
+      totalProfit: 0,
+      winRate: 0,
+      profitFactor: 0,
+      consecutiveLosses: 0,
+      maxConsecutiveLosses: 0,
+      drawdown: 0,
+      maxDrawdown: 0,
     }));
     if (engineRef1?.current?.reset) {
       engineRef1.current.reset();
@@ -332,7 +376,7 @@ export default function AegisEngine({ disabled = false }) {
 
     resetSessionData();
     selectNewBlockMarket();
-    addLog(`🚀 INITIALIZING FRESH TRADE BLOCK: Selected Market=${currentBlockSymbolRef.current}`);
+    addLog(`🚀 INITIALIZING FRESH TRADE BLOCK`);
     executeStart();
   };
 
@@ -428,7 +472,7 @@ export default function AegisEngine({ disabled = false }) {
     }
 
     try {
-      addLog(`🌐 CONNECTING: Fetching ${accountType.toUpperCase()} Options sub-account metadata...`);
+      addLog(`🌐 CONNECTING`);
       const accResponse = await fetch(`${API_BASE}/trading/v1/options/accounts`, {
         headers: {
           Authorization: `Bearer ${patToken}`,
@@ -455,7 +499,7 @@ export default function AegisEngine({ disabled = false }) {
         throw new Error(`No ${accountType} Options account found.`);
       }
 
-      addLog(`🔑 AUTHORIZING: Requesting session OTP token for Account ${targetAccount.account_id}...`);
+      addLog(`🔑 AUTHORIZING`);
       const otpResponse = await fetch(
         `${API_BASE}/trading/v1/options/accounts/${encodeURIComponent(
           targetAccount.account_id
@@ -482,7 +526,7 @@ export default function AegisEngine({ disabled = false }) {
         );
       }
 
-      addLog("⚡ SOCKET CONNECTING: Establishing real-time feed with Deriv API...");
+      addLog("Establishing real-time feed with Deriv API...");
       const ws = new WebSocket(wsUrl);
       wsRef1.current = ws;
 
@@ -541,7 +585,7 @@ export default function AegisEngine({ disabled = false }) {
 
         if (data.msg_type === "proposal") {
           if (data.proposal) {
-            addLog(`📥 PROPOSAL ACCEPTED: ID=${data.proposal.id} | Ask Price=$${data.proposal.ask_price}`);
+            addLog(`📥 PROPOSAL ACCEPTED`);
             ws.send(
               JSON.stringify({
                 buy: data.proposal.id,
@@ -556,7 +600,7 @@ export default function AegisEngine({ disabled = false }) {
 
         if (data.msg_type === "buy") {
           const contractId = data.buy.contract_id;
-          addLog(`🛒 POSITION PURCHASED: Contract #${contractId} confirmed active.`);
+          addLog(`🛒 POSITION PURCHASED`);
           setBot1State((prev) => ({
             ...prev,
             contract: { contractId, profit: 0 },
@@ -632,6 +676,30 @@ export default function AegisEngine({ disabled = false }) {
                 2
               )} | Net Acc=$${totalSessionProfitRef.current.toFixed(2)}`
             );
+
+            // USER-DEFINED TAKE PROFIT CHECK
+            const tpVal = Number(takeProfit);
+            if (tpVal > 0 && totalSessionProfitRef.current >= tpVal) {
+              addLog(
+                `🎯 [TAKE PROFIT HIT] Net profit ($${totalSessionProfitRef.current.toFixed(
+                  2
+                )}) reached target ($${tpVal.toFixed(2)}). Stopping engine.`
+              );
+              stopBot();
+              return;
+            }
+
+            // USER-DEFINED STOP LOSS CHECK
+            const slVal = Number(stopLoss);
+            if (slVal > 0 && totalSessionProfitRef.current <= -Math.abs(slVal)) {
+              addLog(
+                `🛑 [STOP LOSS HIT] Net drawdown ($${totalSessionProfitRef.current.toFixed(
+                  2
+                )}) reached threshold (-$${Math.abs(slVal).toFixed(2)}). Stopping engine.`
+              );
+              stopBot();
+              return;
+            }
 
             // 1. HARD DRAWDOWN CHECK: Limit set to -25 * base stake
             const maxDrawdownLimit = -1 * Number(minStake) * 2500;
@@ -762,11 +830,11 @@ export default function AegisEngine({ disabled = false }) {
       <div className="bot-header">
         <div className="bot-title-group">
           <div className="title-with-badge">
-            <h2>Aegis Matrix Engine</h2>
-            <span className="premium-badge">PREMIUM</span>
+            <h2>QuantumSpikePro</h2>
+            <span className="premium-badge">PRO</span>
           </div>
           <span className="bot-subtitle">
-            Single-Market Execution • Dynamic Target Recovery
+            High-Frequency Spike Execution • Adaptive Quantum Recovery
           </span>
         </div>
         <span className="account-tag">{accountType.toUpperCase()}</span>
@@ -835,6 +903,34 @@ export default function AegisEngine({ disabled = false }) {
         </div>
       </div>
 
+      <div className="config-grid dual-field" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "16px" }}>
+        <div className="form-field">
+          <label>Take Profit ($ Max Limit, Default = 5x Stake)</label>
+          <input
+            type="number"
+            step="1.00"
+            min="0"
+            placeholder={(minStake * 5).toFixed(2)}
+            value={takeProfit}
+            onChange={handleTakeProfitChange}
+            disabled={bot1State.isTrading || disabled}
+          />
+        </div>
+
+        <div className="form-field">
+          <label>Stop Loss ($ Max Loss, Default = 100x Stake)</label>
+          <input
+            type="number"
+            step="1.00"
+            min="0"
+            placeholder={(minStake * 100).toFixed(2)}
+            value={stopLoss}
+            onChange={handleStopLossChange}
+            disabled={bot1State.isTrading || disabled}
+          />
+        </div>
+      </div>
+
       <div className="metrics-ribbon">
         <div className="metric-item">
           <span className="metric-label">Active Market</span>
@@ -855,8 +951,16 @@ export default function AegisEngine({ disabled = false }) {
           <span className="metric-value">${nextStakeVal.toFixed(2)}</span>
         </div>
         <div className="metric-item">
-          <span className="metric-label">Target Profit / Win</span>
-          <span className="metric-value">${unitProfit.toFixed(2)}</span>
+          <span className="metric-label">Running Balance</span>
+          <span
+            className={`metric-value ${
+              (engineRef1?.current?.cycleRunningBalance || 0) >= 0
+                ? "highlight-win"
+                : "status-off"
+            }`}
+          >
+            ${(engineRef1?.current?.cycleRunningBalance || 0).toFixed(2)}
+          </span>
         </div>
         <div className="metric-item">
           <span className="metric-label">Banked Wins</span>
@@ -891,12 +995,12 @@ export default function AegisEngine({ disabled = false }) {
               className="start-btn premium-btn"
               disabled={disabled}
             >
-              Start Aegis Engine
+              Start QuantumSpikePro
             </button>
           )
         ) : (
           <button onClick={stopBot} className="stop-btn">
-            Stop Aegis Engine
+            Stop QuantumSpikePro
           </button>
         )}
       </div>
@@ -905,7 +1009,7 @@ export default function AegisEngine({ disabled = false }) {
         <div className="console-title">Engine Terminal Output</div>
         <pre className="logs-console">
           {bot1State.logs.join("\n") ||
-            "Aegis Engine standing by. Ready to launch trading session..."}
+            "QuantumSpikePro standing by. Ready to launch trading session..."}
         </pre>
       </div>
     </div>

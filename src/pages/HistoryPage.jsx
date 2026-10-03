@@ -107,7 +107,6 @@ export default function HistoryPage() {
     setPersistentHistory(saved ? JSON.parse(saved) : []);
   }, [selectedBotId]);
 
-  // Sync incoming live trades to persistent storage without clearing on engine restarts
   // Sync incoming live trades to persistent storage without duplicate entries
   useEffect(() => {
     if (!liveHistory || liveHistory.length === 0) return;
@@ -191,68 +190,6 @@ export default function HistoryPage() {
     }
   };
 
-  // CSV Export Functionality
-  const exportToCSV = () => {
-    if (historyData.length === 0) return;
-
-    const headers = [
-      "#",
-      "Block/Row",
-      "Outcome",
-      "Stake ($)",
-      "Profit/Loss ($)",
-      "Running Balance ($)",
-      "Expected Wins",
-      "Divisor/Modifier",
-      "Expected Profit ($)",
-      "Formula Used",
-      "Status",
-      "Next Stake ($)",
-    ];
-
-    const csvRows = [
-      headers.join(","),
-      ...historyData.map((row, index) => {
-        const rowExpWins = row.expectedWins ?? 1;
-        const rowBanked = row.blockWins ?? 0;
-        const rowMod = row.stakingModifier ?? 0;
-        const rowRem = Math.max(1, rowExpWins - rowBanked);
-        const rowDivisor =
-          row.divisor ??
-          (rowBanked < rowExpWins ? rowRem + rowMod : Math.max(1, rowMod));
-
-        const rowTargetWins = rowBanked >= rowExpWins ? rowBanked : rowExpWins;
-        const rowExpProfit = (rowTargetWins * unitProfit).toFixed(2);
-        const rowBal = Number(row.runningBalance || 0).toFixed(2);
-
-        const formulaStr = `"[( $${rowExpProfit} - ($${rowBal}) ) / ${rowDivisor}] * 1.1"`;
-
-        return [
-          row.totalTrade || index + 1,
-          `"${row.blockNum ? `Block ${row.blockNum} (${row.blockRow})` : row.blockRow || "-"}"`,
-          row.outcome || "-",
-          Number(row.stakeUsed || 0).toFixed(2),
-          Number(row.profitLoss || 0).toFixed(2),
-          rowBal,
-          rowExpWins,
-          rowDivisor,
-          rowExpProfit,
-          formulaStr,
-          `"${row.blockStatus || "Active"}"`,
-          Number(row.nextStake || 0).toFixed(2),
-        ].join(",");
-      }),
-    ];
-
-    const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${selectedBotId}_trading_history_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
-
   return (
     <div className="history-container">
       {/* Header Controls */}
@@ -265,9 +202,6 @@ export default function HistoryPage() {
         </div>
 
         <div className="history-controls">
-          <button onClick={exportToCSV} className="export-btn" disabled={historyData.length === 0}>
-            📥 Export CSV
-          </button>
           <button onClick={handleClearHistory} className="clear-btn" disabled={historyData.length === 0}>
             🗑️ Clear History
           </button>
@@ -371,10 +305,6 @@ export default function HistoryPage() {
                 <th className="p-3 font-semibold text-gray-700">Stake</th>
                 <th className="p-3 font-semibold text-gray-700">P/L</th>
                 <th className="p-3 font-semibold text-gray-700 whitespace-nowrap">Running Bal</th>
-                <th className="p-3 font-semibold text-gray-700 whitespace-nowrap">Exp. Wins</th>
-                <th className="p-3 font-semibold text-gray-700 whitespace-nowrap">Divisor</th>
-                <th className="p-3 font-semibold text-gray-700 whitespace-nowrap">Stake Formula Breakdown</th>
-                <th className="p-3 font-semibold text-gray-700">Status</th>
                 <th className="p-3 font-semibold text-gray-700">Next Stake</th>
               </tr>
             </thead>
@@ -390,27 +320,6 @@ export default function HistoryPage() {
                     const formattedProfit = Number(row.profitLoss || 0).toFixed(2);
                     const formattedRunningBal = Number(row.runningBalance || 0).toFixed(2);
                     const formattedNextStake = Number(row.nextStake || 0).toFixed(2);
-
-                    const rowExpWins = row.expectedWins ?? 1;
-                    const rowBanked = row.blockWins ?? 0;
-                    const rowMod = row.stakingModifier ?? 0;
-                    const rowRemWins = Math.max(1, rowExpWins - rowBanked);
-
-                    const effectiveDivisor =
-                      row.divisor ??
-                      (rowBanked < rowExpWins
-                        ? rowRemWins + rowMod
-                        : rowMod > 0
-                        ? rowMod
-                        : 1);
-
-                    const effectiveTargetWins = rowBanked >= rowExpWins ? rowBanked : rowExpWins;
-                    const targetProfit = Number((effectiveTargetWins * unitProfit).toFixed(2));
-                    const runningBalNum = Number(row.runningBalance || 0);
-                    const recoveryGap = Number((targetProfit - runningBalNum).toFixed(2));
-
-                    const formulaDisplay = `[($${targetProfit} Target - ($${formattedRunningBal} Bal)) / ${effectiveDivisor}] × 1.1`;
-                    const calculationResult = `[ $${recoveryGap} / ${effectiveDivisor} ] × 1.1 = $${formattedNextStake}`;
 
                     return (
                       <tr key={index} className="table-body-row">
@@ -445,31 +354,6 @@ export default function HistoryPage() {
                         <td className="p-3 font-mono text-gray-700 whitespace-nowrap">
                           ${formattedRunningBal}
                         </td>
-                        <td className="p-3 font-mono text-gray-700 whitespace-nowrap text-center font-semibold">
-                          {rowExpWins}
-                        </td>
-                        <td className="p-3 font-mono text-center font-semibold text-accent whitespace-nowrap">
-                          {effectiveDivisor} {rowMod > 0 ? `(+${rowMod} Mod)` : ""}
-                        </td>
-                        <td className="p-3 font-mono text-xs text-gray-700 whitespace-nowrap">
-                          <div className="flex flex-col">
-                            <span className="font-semibold text-gray-900">{formulaDisplay}</span>
-                            <span className="text-gray-500 text-[11px]">{calculationResult}</span>
-                          </div>
-                        </td>
-                        <td className="p-3">
-                          <span
-                            className={`status-badge ${
-                              String(row.blockStatus).includes("WIN")
-                                ? "status-block-win"
-                                : String(row.blockStatus).includes("LOSS")
-                                ? "status-block-loss"
-                                : "status-block-active"
-                            }`}
-                          >
-                            {row.blockStatus || "Active"}
-                          </span>
-                        </td>
                         <td className="p-3 font-mono font-bold text-accent">
                           ${formattedNextStake}
                         </td>
@@ -478,7 +362,7 @@ export default function HistoryPage() {
                   })
               ) : (
                 <tr>
-                  <td colSpan="11" className="empty-table-cell">
+                  <td colSpan="7" className="empty-table-cell">
                     <div className="empty-state">
                       <span className="empty-icon">📊</span>
                       <p className="empty-title">No Trade History Logged</p>

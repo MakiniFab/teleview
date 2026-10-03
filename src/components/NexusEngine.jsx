@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useTrading } from "../context/TradingContext";
-import "./TitanEngine.css";
+import "./AegisEngine.css";
 
 const API_BASE = "https://api.derivws.com";
-const APP_ID = "34sztETpkcwjcAayV9upz";
+const APP_ID = "34jtvKMAMvumIpF2SDF0D";
 const CURRENCY = "USD";
 const STORAGE_KEY = "nexus_engine_session_v1";
 
@@ -57,6 +57,24 @@ export default function NexusEngine({ disabled = false }) {
     return saved ? JSON.parse(saved).durationUnit || "m" : "m";
   });
 
+  // Take Profit (Default: 5 * minStake)
+  const [takeProfit, setTakeProfit] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved && JSON.parse(saved).takeProfit !== undefined) {
+      return JSON.parse(saved).takeProfit;
+    }
+    return minStake * 5;
+  });
+
+  // Stop Loss (Default: 100 * minStake)
+  const [stopLoss, setStopLoss] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved && JSON.parse(saved).stopLoss !== undefined) {
+      return JSON.parse(saved).stopLoss;
+    }
+    return minStake * 100;
+  });
+
   // UI Counters directly from local storage if available
   const [bankedWinsCount, setBankedWinsCount] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -84,8 +102,8 @@ export default function NexusEngine({ disabled = false }) {
   const lossStreakRef = useRef(0);
   const totalSessionProfitRef = useRef(0);
 
-  // Alternating Contract Type State ("CALL" <-> "PUT")
-  const lastContractTypeRef = useRef("CALL");
+  // Contract Type Alternation State: Starts with PUT, switches to CALL after every proposal
+  const currentContractTypeRef = useRef("PUT");
 
   // Persistent market symbol for the entire duration of a trade block
   const currentBlockSymbolRef = useRef(null);
@@ -112,11 +130,11 @@ export default function NexusEngine({ disabled = false }) {
         if (parsed.currentBlockSymbol) {
           currentBlockSymbolRef.current = parsed.currentBlockSymbol;
         }
-        if (parsed.lastContractType) {
-          lastContractTypeRef.current = parsed.lastContractType;
+        if (parsed.nextContractType) {
+          currentContractTypeRef.current = parsed.nextContractType;
         }
 
-        // Restore saved trade history into state
+        // Restore saved trade history into Bot 2 state
         if (Array.isArray(parsed.history) && parsed.history.length > 0) {
           setBot2State((prev) => ({
             ...prev,
@@ -143,13 +161,15 @@ export default function NexusEngine({ disabled = false }) {
       profitRatio: Number(profitRatio),
       durationValue: Number(durationValue),
       durationUnit,
+      takeProfit: Number(takeProfit),
+      stopLoss: Number(stopLoss),
       bankedWinsCount: updatedWins,
       totalSettledCount: updatedSettled,
       settledIds: Array.from(settledIdsRef.current),
       lossStreak: lossStreakRef.current,
       totalSessionProfit: updatedProfit,
       currentBlockSymbol: currentBlockSymbolRef.current,
-      lastContractType: lastContractTypeRef.current,
+      nextContractType: currentContractTypeRef.current,
       history: bot2State.history,
       engineState: engineRef2?.current?.exportState
         ? engineRef2.current.exportState()
@@ -195,6 +215,10 @@ export default function NexusEngine({ disabled = false }) {
   const handleStakeChange = (e) => {
     const val = Math.max(1.0, parseFloat(e.target.value) || 1.0);
     setMinStake(val);
+    
+    // Recalculate limits dynamically
+    setTakeProfit(val * 5);
+    setStopLoss(val * 100);
   };
 
   const handleRatioChange = (e) => {
@@ -222,6 +246,16 @@ export default function NexusEngine({ disabled = false }) {
       if (unitConfig.max && val > unitConfig.max) return setDurationValue(unitConfig.max);
     }
     setDurationValue(val);
+  };
+
+  const handleTakeProfitChange = (e) => {
+    const val = Math.max(0, parseFloat(e.target.value) || 0);
+    setTakeProfit(val);
+  };
+
+  const handleStopLossChange = (e) => {
+    const val = Math.max(0, parseFloat(e.target.value) || 0);
+    setStopLoss(val);
   };
 
   const getTimeoutDurationMs = () => {
@@ -254,6 +288,7 @@ export default function NexusEngine({ disabled = false }) {
 
     isExecutingRef.current = true;
 
+    // Synchronize Bot 2 engine context
     if (engineRef2?.current) {
       engineRef2.current.MIN_STAKE = Number(minStake);
       engineRef2.current.UNIT_TARGET_PROFIT = unitProfit;
@@ -265,10 +300,6 @@ export default function NexusEngine({ disabled = false }) {
 
     const stake = Number(Math.max(1.0, rawStake).toFixed(2));
     activeStakeRef.current = stake;
-
-    // Toggle contract direction: CALL <-> PUT
-    const nextContractType = lastContractTypeRef.current === "CALL" ? "PUT" : "CALL";
-    lastContractTypeRef.current = nextContractType;
 
     const safetyBufferMs = 15000;
     const durationMs = getTimeoutDurationMs();
@@ -287,13 +318,17 @@ export default function NexusEngine({ disabled = false }) {
     }
     const activeSymbol = currentBlockSymbolRef.current;
 
+    // Use current contract type and immediately toggle for next trade
+    const contractTypeToTrade = currentContractTypeRef.current;
+    currentContractTypeRef.current = contractTypeToTrade === "PUT" ? "CALL" : "PUT";
+
     try {
       ws.send(
         JSON.stringify({
           proposal: 1,
           amount: stake,
           basis: "stake",
-          contract_type: nextContractType,
+          contract_type: contractTypeToTrade,
           currency: CURRENCY,
           duration: Number(durationValue),
           duration_unit: durationUnit,
@@ -302,7 +337,7 @@ export default function NexusEngine({ disabled = false }) {
         })
       );
       addLog(
-        `📈 PROPOSAL REQUEST: Market=${activeSymbol} | Type=${nextContractType} | Duration=${durationValue}${durationUnit} | Calculated Stake=$${stake.toFixed(2)}`
+        `📈 PROPOSAL REQUEST: Market=${activeSymbol} | Type=${contractTypeToTrade} | Duration=${durationValue}${durationUnit} | Calculated Stake=$${stake.toFixed(2)}`
       );
     } catch (err) {
       addLog(`❌ PROPOSAL FAILED: ${err.message}`);
@@ -314,7 +349,7 @@ export default function NexusEngine({ disabled = false }) {
     lossStreakRef.current = 0;
     totalSessionProfitRef.current = 0;
     currentBlockSymbolRef.current = null;
-    lastContractTypeRef.current = "CALL";
+    currentContractTypeRef.current = "PUT"; // Reset alternation to start with PUT
     setBankedWinsCount(0);
     setTotalSettledCount(0);
     settledIdsRef.current.clear();
@@ -324,8 +359,18 @@ export default function NexusEngine({ disabled = false }) {
     setBot2State((prev) => ({
       ...prev,
       logs: [],
-      history: prev.history,
+      history: [], // Clear trade history array on fresh cycle reset
       contract: null,
+      wins: 0,
+      losses: 0,
+      totalTrades: 0,
+      totalProfit: 0,
+      winRate: 0,
+      profitFactor: 0,
+      consecutiveLosses: 0,
+      maxConsecutiveLosses: 0,
+      drawdown: 0,
+      maxDrawdown: 0,
     }));
     if (engineRef2?.current?.reset) {
       engineRef2.current.reset();
@@ -342,7 +387,7 @@ export default function NexusEngine({ disabled = false }) {
 
     resetSessionData();
     selectNewBlockMarket();
-    addLog(`🚀 INITIALIZING FRESH TRADE BLOCK: Selected Market=${currentBlockSymbolRef.current}`);
+    addLog(`🚀 INITIALIZING FRESH TRADE BLOCK`);
     executeStart();
   };
 
@@ -359,7 +404,7 @@ export default function NexusEngine({ disabled = false }) {
     }
 
     addLog(
-      `▶️ RESUMING SESSION: Market=${currentBlockSymbolRef.current} | Saved Wins=${bankedWinsCount} | Settled Trades=${totalSettledCount}`
+      `▶️ RESUMING SESSION: Market=${currentBlockSymbolRef.current} | Saved Wins=${bankedWinsCount} | Settled Trades=${totalSettledCount} | Next Type=${currentContractTypeRef.current}`
     );
     executeStart();
   };
@@ -438,7 +483,7 @@ export default function NexusEngine({ disabled = false }) {
     }
 
     try {
-      addLog(`🌐 CONNECTING: Fetching ${accountType.toUpperCase()} Options sub-account metadata...`);
+      addLog(`🌐 CONNECTING`);
       const accResponse = await fetch(`${API_BASE}/trading/v1/options/accounts`, {
         headers: {
           Authorization: `Bearer ${patToken}`,
@@ -465,7 +510,7 @@ export default function NexusEngine({ disabled = false }) {
         throw new Error(`No ${accountType} Options account found.`);
       }
 
-      addLog(`🔑 AUTHORIZING: Requesting session OTP token for Account ${targetAccount.account_id}...`);
+      addLog(`🔑 AUTHORIZING`);
       const otpResponse = await fetch(
         `${API_BASE}/trading/v1/options/accounts/${encodeURIComponent(
           targetAccount.account_id
@@ -492,7 +537,7 @@ export default function NexusEngine({ disabled = false }) {
         );
       }
 
-      addLog("⚡ SOCKET CONNECTING: Establishing real-time feed with Deriv API...");
+      addLog("Establishing real-time feed with Deriv API...");
       const ws = new WebSocket(wsUrl);
       wsRef2.current = ws;
 
@@ -551,7 +596,7 @@ export default function NexusEngine({ disabled = false }) {
 
         if (data.msg_type === "proposal") {
           if (data.proposal) {
-            addLog(`📥 PROPOSAL ACCEPTED: ID=${data.proposal.id} | Ask Price=$${data.proposal.ask_price}`);
+            addLog(`📥 PROPOSAL ACCEPTED`);
             ws.send(
               JSON.stringify({
                 buy: data.proposal.id,
@@ -566,7 +611,7 @@ export default function NexusEngine({ disabled = false }) {
 
         if (data.msg_type === "buy") {
           const contractId = data.buy.contract_id;
-          addLog(`🛒 POSITION PURCHASED: Contract #${contractId} confirmed active.`);
+          addLog(`🛒 POSITION PURCHASED`);
           setBot2State((prev) => ({
             ...prev,
             contract: { contractId, profit: 0 },
@@ -630,7 +675,7 @@ export default function NexusEngine({ disabled = false }) {
 
             setBot2State((prev) => ({
               ...prev,
-              history: [...prev.history, { bot: "Nexus Engine", ...row }],
+              history: [...prev.history, { bot: "Nexus Dynamic", ...row }],
             }));
 
             addLog(
@@ -642,6 +687,30 @@ export default function NexusEngine({ disabled = false }) {
                 2
               )} | Net Acc=$${totalSessionProfitRef.current.toFixed(2)}`
             );
+
+            // USER-DEFINED TAKE PROFIT CHECK
+            const tpVal = Number(takeProfit);
+            if (tpVal > 0 && totalSessionProfitRef.current >= tpVal) {
+              addLog(
+                `🎯 [TAKE PROFIT HIT] Net profit ($${totalSessionProfitRef.current.toFixed(
+                  2
+                )}) reached target ($${tpVal.toFixed(2)}). Stopping engine.`
+              );
+              stopBot();
+              return;
+            }
+
+            // USER-DEFINED STOP LOSS CHECK
+            const slVal = Number(stopLoss);
+            if (slVal > 0 && totalSessionProfitRef.current <= -Math.abs(slVal)) {
+              addLog(
+                `🛑 [STOP LOSS HIT] Net drawdown ($${totalSessionProfitRef.current.toFixed(
+                  2
+                )}) reached threshold (-$${Math.abs(slVal).toFixed(2)}). Stopping engine.`
+              );
+              stopBot();
+              return;
+            }
 
             // 1. HARD DRAWDOWN CHECK: Limit set to -25 * base stake
             const maxDrawdownLimit = -1 * Number(minStake) * 2500;
@@ -772,11 +841,11 @@ export default function NexusEngine({ disabled = false }) {
       <div className="bot-header">
         <div className="bot-title-group">
           <div className="title-with-badge">
-            <h2>Nexus Engine</h2>
+            <h2>Nexus Dynamic Engine</h2>
             <span className="premium-badge">PREMIUM</span>
           </div>
           <span className="bot-subtitle">
-            Single-Market Execution • Alternating Direction (CALL/PUT)
+            Single-Market Execution • Alternating PUT/CALL Strategy
           </span>
         </div>
         <span className="account-tag">{accountType.toUpperCase()}</span>
@@ -784,10 +853,10 @@ export default function NexusEngine({ disabled = false }) {
 
       <div className="bot-explanation">
         <p className="notice-highlight">
-          ⚠️️ Market locked to <strong>{activeMarketLabel}</strong> for current trade block.
+          ⚠️ Market locked to <strong>{activeMarketLabel}</strong> for current trade block.
         </p>
         <p className="risk-warning-banner" style={{ color: "#a0aec0", fontSize: "0.85rem", marginTop: "4px" }}>
-          💡 Profit Ratio range is 25% – 75%. Contract direction automatically alternates between CALL and PUT on every execution.
+          💡 Profit Ratio range is 25% – 75%. Higher ratios increase target payouts per win but scale recovery stakes faster during loss streaks.
         </p>
       </div>
 
@@ -845,6 +914,34 @@ export default function NexusEngine({ disabled = false }) {
         </div>
       </div>
 
+      <div className="config-grid dual-field" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "16px" }}>
+        <div className="form-field">
+          <label>Take Profit ($ Max Limit, Default = 5x Stake)</label>
+          <input
+            type="number"
+            step="1.00"
+            min="0"
+            placeholder={(minStake * 5).toFixed(2)}
+            value={takeProfit}
+            onChange={handleTakeProfitChange}
+            disabled={bot2State.isTrading || disabled}
+          />
+        </div>
+
+        <div className="form-field">
+          <label>Stop Loss ($ Max Loss, Default = 100x Stake)</label>
+          <input
+            type="number"
+            step="1.00"
+            min="0"
+            placeholder={(minStake * 100).toFixed(2)}
+            value={stopLoss}
+            onChange={handleStopLossChange}
+            disabled={bot2State.isTrading || disabled}
+          />
+        </div>
+      </div>
+
       <div className="metrics-ribbon">
         <div className="metric-item">
           <span className="metric-label">Active Market</span>
@@ -865,8 +962,16 @@ export default function NexusEngine({ disabled = false }) {
           <span className="metric-value">${nextStakeVal.toFixed(2)}</span>
         </div>
         <div className="metric-item">
-          <span className="metric-label">Target Profit / Win</span>
-          <span className="metric-value">${unitProfit.toFixed(2)}</span>
+          <span className="metric-label">Running Balance</span>
+          <span
+            className={`metric-value ${
+              (engineRef2?.current?.cycleRunningBalance || 0) >= 0
+                ? "highlight-win"
+                : "status-off"
+            }`}
+          >
+            ${(engineRef2?.current?.cycleRunningBalance || 0).toFixed(2)}
+          </span>
         </div>
         <div className="metric-item">
           <span className="metric-label">Banked Wins</span>
