@@ -72,7 +72,7 @@ export default function AegisEngine({ disabled = false }) {
     if (saved && JSON.parse(saved).stopLoss !== undefined) {
       return JSON.parse(saved).stopLoss;
     }
-    return minStake * 100;
+    return minStake * 30;
   });
 
   // UI Counters directly from local storage if available
@@ -93,7 +93,13 @@ export default function AegisEngine({ disabled = false }) {
     return (data.totalSettledCount || 0) > 0 || (data.bankedWinsCount || 0) > 0;
   });
 
-  const requestIdRef = useRef(300);
+  // Dynamic Contract Type Tracking (PUT / CALL alternating on loss)
+  const [currentContractType, setCurrentContractType] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved).currentContractType || "PUT" : "PUT";
+  });
+
+  const requestIdRef = useRef(500);
   const isExecutingRef = useRef(false);
   const activeStakeRef = useRef(1.0);
   const settledIdsRef = useRef(new Set());
@@ -105,7 +111,6 @@ export default function AegisEngine({ disabled = false }) {
   // Persistent market symbol for the entire duration of a trade block
   const currentBlockSymbolRef = useRef(null);
 
-  // Pick a single random market for the block
   const selectNewBlockMarket = () => {
     const randomIndex = Math.floor(Math.random() * VOLATILITY_MARKETS.length);
     const selected = VOLATILITY_MARKETS[randomIndex].id;
@@ -127,8 +132,10 @@ export default function AegisEngine({ disabled = false }) {
         if (parsed.currentBlockSymbol) {
           currentBlockSymbolRef.current = parsed.currentBlockSymbol;
         }
+        if (parsed.currentContractType) {
+          setCurrentContractType(parsed.currentContractType);
+        }
 
-        // Restore saved trade history into state
         if (Array.isArray(parsed.history) && parsed.history.length > 0) {
           setBot1State((prev) => ({
             ...prev,
@@ -140,16 +147,15 @@ export default function AegisEngine({ disabled = false }) {
           engineRef1.current.restoreState(parsed.engineState);
         }
       } catch (err) {
-        console.error("Failed to restore Aegis session from storage:", err);
+        console.error("Failed to restore AegisEngine session from storage:", err);
       }
     }
   }, [engineRef1, setBot1State]);
 
-  // Calculated target values
   const unitProfit = Number(minStake) * Number(profitRatio);
   const blockTargetProfit = 250 * unitProfit;
 
-  const saveSessionToStorage = (updatedWins, updatedSettled, updatedProfit) => {
+  const saveSessionToStorage = (updatedWins, updatedSettled, updatedProfit, contractTypeVal) => {
     const payload = {
       minStake: Number(minStake),
       profitRatio: Number(profitRatio),
@@ -163,7 +169,8 @@ export default function AegisEngine({ disabled = false }) {
       lossStreak: lossStreakRef.current,
       totalSessionProfit: updatedProfit,
       currentBlockSymbol: currentBlockSymbolRef.current,
-      history: bot1State.history, // Persist history array to localStorage
+      currentContractType: contractTypeVal,
+      history: bot1State.history,
       engineState: engineRef1?.current?.exportState
         ? engineRef1.current.exportState()
         : null,
@@ -176,7 +183,7 @@ export default function AegisEngine({ disabled = false }) {
     const time = new Date().toLocaleTimeString();
     setBot1State((prev) => ({
       ...prev,
-      logs: [...prev.logs.slice(-99), `[AEGIS-BOT | ${time}] ${msg}`],
+      logs: [...prev.logs.slice(-99), `[AEGIS-ENGINE | ${time}] ${msg}`],
     }));
   };
 
@@ -208,10 +215,8 @@ export default function AegisEngine({ disabled = false }) {
   const handleStakeChange = (e) => {
     const val = Math.max(1.0, parseFloat(e.target.value) || 1.0);
     setMinStake(val);
-    
-    // Dynamically recalculate default limits based on the new base stake
     setTakeProfit(val * 5);
-    setStopLoss(val * 100);
+    setStopLoss(val * 30);
   };
 
   const handleRatioChange = (e) => {
@@ -251,22 +256,15 @@ export default function AegisEngine({ disabled = false }) {
     setStopLoss(val);
   };
 
-  // Convert contract duration into estimated timeout milliseconds
   const getTimeoutDurationMs = () => {
     const val = Number(durationValue);
     switch (durationUnit) {
-      case "t":
-        return val * 2000;
-      case "s":
-        return val * 1000;
-      case "m":
-        return val * 60 * 1000;
-      case "h":
-        return val * 60 * 60 * 1000;
-      case "d":
-        return val * 24 * 60 * 60 * 1000;
-      default:
-        return 120000;
+      case "t": return val * 2000;
+      case "s": return val * 1000;
+      case "m": return val * 60 * 1000;
+      case "h": return val * 60 * 60 * 1000;
+      case "d": return val * 24 * 60 * 60 * 1000;
+      default: return 120000;
     }
   };
 
@@ -282,7 +280,6 @@ export default function AegisEngine({ disabled = false }) {
 
     isExecutingRef.current = true;
 
-    // Synchronize engine variables with active UI parameters
     if (engineRef1?.current) {
       engineRef1.current.MIN_STAKE = Number(minStake);
       engineRef1.current.UNIT_TARGET_PROFIT = unitProfit;
@@ -318,7 +315,7 @@ export default function AegisEngine({ disabled = false }) {
           proposal: 1,
           amount: stake,
           basis: "stake",
-          contract_type: "PUT",
+          contract_type: currentContractType,
           currency: CURRENCY,
           duration: Number(durationValue),
           duration_unit: durationUnit,
@@ -327,7 +324,7 @@ export default function AegisEngine({ disabled = false }) {
         })
       );
       addLog(
-        `📈 PROPOSAL REQUEST: Market=${activeSymbol} | Type=PUT | Duration=${durationValue}${durationUnit} | Calculated Stake=$${stake.toFixed(2)}`
+        `📈 PROPOSAL REQUEST: Market=${activeSymbol} | Type=${currentContractType} | Duration=${durationValue}${durationUnit} | Calculated Stake=$${stake.toFixed(2)}`
       );
     } catch (err) {
       addLog(`❌ PROPOSAL FAILED: ${err.message}`);
@@ -339,6 +336,7 @@ export default function AegisEngine({ disabled = false }) {
     lossStreakRef.current = 0;
     totalSessionProfitRef.current = 0;
     currentBlockSymbolRef.current = null;
+    setCurrentContractType("PUT");
     setBankedWinsCount(0);
     setTotalSettledCount(0);
     settledIdsRef.current.clear();
@@ -348,7 +346,7 @@ export default function AegisEngine({ disabled = false }) {
     setBot1State((prev) => ({
       ...prev,
       logs: [],
-      history: [], // Reset trade history array in TradingContext for a fresh cycle
+      history: [],
       contract: null,
       wins: 0,
       losses: 0,
@@ -376,7 +374,7 @@ export default function AegisEngine({ disabled = false }) {
 
     resetSessionData();
     selectNewBlockMarket();
-    addLog(`🚀 INITIALIZING FRESH TRADE BLOCK`);
+    addLog(`🚀 INITIALIZING FRESH TRADE BLOCK (AegisEngine)`);
     executeStart();
   };
 
@@ -393,7 +391,7 @@ export default function AegisEngine({ disabled = false }) {
     }
 
     addLog(
-      `▶️ RESUMING SESSION: Market=${currentBlockSymbolRef.current} | Saved Wins=${bankedWinsCount} | Settled Trades=${totalSettledCount}`
+      `▶️ RESUMING SESSION: Market=${currentBlockSymbolRef.current} | Type=${currentContractType} | Saved Wins=${bankedWinsCount}`
     );
     executeStart();
   };
@@ -401,7 +399,6 @@ export default function AegisEngine({ disabled = false }) {
   const stopBot = () => {
     isTradingRef.current = false;
     isExecutingRef.current = false;
-
     clearExecutionTimeout();
 
     if (wsRef1.current) {
@@ -514,16 +511,12 @@ export default function AegisEngine({ disabled = false }) {
       );
       const otpData = await readJsonResponse(otpResponse);
       if (!otpResponse.ok) {
-        throw new Error(
-          otpData?.error?.message || "OTP session authorization failed."
-        );
+        throw new Error(otpData?.error?.message || "OTP session authorization failed.");
       }
 
       const wsUrl = otpData?.data?.url;
       if (!wsUrl) {
-        throw new Error(
-          "Deriv REST API did not return a valid WebSocket endpoint."
-        );
+        throw new Error("Deriv REST API did not return a valid WebSocket endpoint.");
       }
 
       addLog("Establishing real-time feed with Deriv API...");
@@ -533,7 +526,7 @@ export default function AegisEngine({ disabled = false }) {
       ws.onopen = () => {
         isExecutingRef.current = false;
         addLog(
-          `✅ CONNECTED: Market=${currentBlockSymbolRef.current} | Base Stake=$${Number(minStake).toFixed(2)} | Target/Win=$${unitProfit.toFixed(2)} (${(profitRatio * 100).toFixed(1)}%) | Duration=${durationValue}${durationUnit}`
+          `✅ CONNECTED: Market=${currentBlockSymbolRef.current} | Type=${currentContractType} | Base Stake=$${Number(minStake).toFixed(2)} | Target/Win=$${unitProfit.toFixed(2)} (${(profitRatio * 100).toFixed(1)}%)`
         );
 
         ws.send(
@@ -650,6 +643,15 @@ export default function AegisEngine({ disabled = false }) {
               profit > 0 || poc.status === "won" || row.outcome === "W";
             totalSessionProfitRef.current += Number(row.profitLoss || 0);
 
+            let nextType = currentContractType;
+            if (!isWin) {
+              nextType = currentContractType === "PUT" ? "CALL" : "PUT";
+              setCurrentContractType(nextType);
+              addLog(`⚡ DYNAMIC SWITCH: Loss registered. Switched contract type to [${nextType}]`);
+            } else {
+              addLog(`🎯 MAINTAINED: Win registered. Retaining contract type [${currentContractType}]`);
+            }
+
             const updatedWinsCount = row.blockWins;
             const updatedSettledCount = settledIdsRef.current.size;
 
@@ -659,12 +661,13 @@ export default function AegisEngine({ disabled = false }) {
             saveSessionToStorage(
               updatedWinsCount,
               updatedSettledCount,
-              totalSessionProfitRef.current
+              totalSessionProfitRef.current,
+              nextType
             );
 
             setBot1State((prev) => ({
               ...prev,
-              history: [...prev.history, { bot: "Aegis Matrix", ...row }],
+              history: [...prev.history, { bot: "AegisEngine", ...row }],
             }));
 
             addLog(
@@ -672,86 +675,47 @@ export default function AegisEngine({ disabled = false }) {
                 isWin ? "WIN 🟢" : "LOSS 🔴"
               } | P/L=$${Number(row.profitLoss || 0).toFixed(
                 2
-              )} | Cycle P/L=$${(engineRef1?.current?.cycleRunningBalance || 0).toFixed(
-                2
-              )} | Net Acc=$${totalSessionProfitRef.current.toFixed(2)}`
+              )} | Next Type=${nextType} | Net Acc=$${totalSessionProfitRef.current.toFixed(2)}`
             );
 
-            // USER-DEFINED TAKE PROFIT CHECK
             const tpVal = Number(takeProfit);
             if (tpVal > 0 && totalSessionProfitRef.current >= tpVal) {
-              addLog(
-                `🎯 [TAKE PROFIT HIT] Net profit ($${totalSessionProfitRef.current.toFixed(
-                  2
-                )}) reached target ($${tpVal.toFixed(2)}). Stopping engine.`
-              );
+              addLog(`🎯 [TAKE PROFIT HIT] Net profit reached target. Stopping engine.`);
               stopBot();
               return;
             }
 
-            // USER-DEFINED STOP LOSS CHECK
             const slVal = Number(stopLoss);
             if (slVal > 0 && totalSessionProfitRef.current <= -Math.abs(slVal)) {
-              addLog(
-                `🛑 [STOP LOSS HIT] Net drawdown ($${totalSessionProfitRef.current.toFixed(
-                  2
-                )}) reached threshold (-$${Math.abs(slVal).toFixed(2)}). Stopping engine.`
-              );
+              addLog(`🛑 [STOP LOSS HIT] Net drawdown reached threshold. Stopping engine.`);
               stopBot();
               return;
             }
 
-            // 1. HARD DRAWDOWN CHECK: Limit set to -25 * base stake
             const maxDrawdownLimit = -1 * Number(minStake) * 2500;
             if (totalSessionProfitRef.current < maxDrawdownLimit) {
-              addLog(
-                `🚨 [DRAWDOWN TRIGGERED] Session deficit ($${totalSessionProfitRef.current.toFixed(
-                  2
-                )}) crossed threshold limit ($${maxDrawdownLimit.toFixed(
-                  2
-                )}).`
-              );
-              autoRestartFreshBlock(`Maximum Session Drawdown Exceeded ($${maxDrawdownLimit.toFixed(2)})`);
+              autoRestartFreshBlock(`Maximum Session Drawdown Exceeded`);
               return;
             }
 
-            // 2. HIGH-STAKE WIN CAP: Stake > $7.00
             if (isWin && activeStakeRef.current > 700.0) {
-              autoRestartFreshBlock(
-                `[CAP TRIGGERED] Target win achieved at high stake level ($${activeStakeRef.current.toFixed(
-                  2
-                )} > $7.00).`
-              );
+              autoRestartFreshBlock(`[CAP TRIGGERED] Target win achieved at high stake level.`);
               return;
             }
 
-            // 3. RECOVERY THRESHOLD ACHIEVED: Wins >= 10
             const totalLosses = engineRef1?.current?.totalLosses || 0;
             const ratio = engineRef1?.current?.RATIO || 1.9;
             const stakingModifier = engineRef1?.current?.stakingModifier || 0;
             const rawExpected = totalLosses > 0 ? totalLosses / ratio : 1.0;
             const expectedWinsRequired = Math.ceil(rawExpected) + stakingModifier;
 
-            if (
-              updatedWinsCount >= 300 &&
-              updatedWinsCount >= expectedWinsRequired
-            ) {
-              autoRestartFreshBlock(
-                `[EARLY EXIT TRIGGERED] Banked ${updatedWinsCount} wins (>=10) fulfilling calculated recovery threshold (${expectedWinsRequired} req).`
-              );
+            if (updatedWinsCount >= 300 && updatedWinsCount >= expectedWinsRequired) {
+              autoRestartFreshBlock(`[EARLY EXIT TRIGGERED] Banked target recovery wins.`);
               return;
             }
 
-            // 4. STANDARD TARGET OR 25 BANKED WINS REACHED
-            if (
-              updatedWinsCount >= 250 ||
-              totalSessionProfitRef.current >= blockTargetProfit
-            ) {
-              autoRestartFreshBlock(
-                `[TARGET REACHED] Reached ${updatedWinsCount} banked wins ($${totalSessionProfitRef.current.toFixed(
-                  2
-                )} net profit).`
-              );
+            if (updatedWinsCount >= 250 || totalSessionProfitRef.current >= blockTargetProfit) {
+              autoRestartFreshBlock(`[TARGET REACHED] Reached target banked wins.`);
               return;
             }
 
@@ -761,11 +725,8 @@ export default function AegisEngine({ disabled = false }) {
               lossStreakRef.current = 0;
             }
 
-            // 5. MAXIMUM BLOCK LIMIT REACHED (50 TRADES)
             if (updatedSettledCount >= 500) {
-              autoRestartFreshBlock(
-                `[BLOCK ROW LIMIT REACHED] Reached maximum block capacity of 50 settled trades.`
-              );
+              autoRestartFreshBlock(`[BLOCK ROW LIMIT REACHED] Reached maximum block capacity.`);
               return;
             }
 
@@ -782,11 +743,9 @@ export default function AegisEngine({ disabled = false }) {
         clearExecutionTimeout();
         isExecutingRef.current = false;
 
-        if (!isTradingRef.current) {
-          return;
-        }
+        if (!isTradingRef.current) return;
 
-        addLog("🔄 RECONNECTING: Connection lost. Re-establishing link in 3 seconds...");
+        addLog("🔄 RECONNECTING: Re-establishing link in 3 seconds...");
         setTimeout(() => {
           if (isTradingRef.current) {
             executeStart();
@@ -830,7 +789,7 @@ export default function AegisEngine({ disabled = false }) {
       <div className="bot-header">
         <div className="bot-title-group">
           <div className="title-with-badge">
-            <h2>QuantumSpikePro</h2>
+            <h2>AegisEngine</h2>
             <span className="premium-badge">PRO</span>
           </div>
           <span className="bot-subtitle">
@@ -918,12 +877,12 @@ export default function AegisEngine({ disabled = false }) {
         </div>
 
         <div className="form-field">
-          <label>Stop Loss ($ Max Loss, Default = 100x Stake)</label>
+          <label>Stop Loss ($ Max Loss, Default = 30x Stake)</label>
           <input
             type="number"
             step="1.00"
             min="0"
-            placeholder={(minStake * 100).toFixed(2)}
+            placeholder={(minStake * 30).toFixed(2)}
             value={stopLoss}
             onChange={handleStopLossChange}
             disabled={bot1State.isTrading || disabled}
@@ -935,6 +894,12 @@ export default function AegisEngine({ disabled = false }) {
         <div className="metric-item">
           <span className="metric-label">Active Market</span>
           <span className="metric-value">{activeMarketLabel}</span>
+        </div>
+        <div className="metric-item">
+          <span className="metric-label">Contract Type</span>
+          <span className="metric-value" style={{ color: currentContractType === "PUT" ? "#f56565" : "#48bb78" }}>
+            {currentContractType}
+          </span>
         </div>
         <div className="metric-item">
           <span className="metric-label">Engine Status</span>
@@ -995,12 +960,12 @@ export default function AegisEngine({ disabled = false }) {
               className="start-btn premium-btn"
               disabled={disabled}
             >
-              Start QuantumSpikePro
+              Start AegisEngine
             </button>
           )
         ) : (
           <button onClick={stopBot} className="stop-btn">
-            Stop QuantumSpikePro
+            Stop AegisEngine
           </button>
         )}
       </div>
@@ -1009,7 +974,7 @@ export default function AegisEngine({ disabled = false }) {
         <div className="console-title">Engine Terminal Output</div>
         <pre className="logs-console">
           {bot1State.logs.join("\n") ||
-            "QuantumSpikePro standing by. Ready to launch trading session..."}
+            "AegisEngine standing by. Ready to launch trading session..."}
         </pre>
       </div>
     </div>

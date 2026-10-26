@@ -7,8 +7,34 @@ import BotsPage from "./pages/BotsPage";
 import HistoryPage from "./pages/HistoryPage";
 import ContactPage from "./pages/ContactPage";
 import Footer from "./pages/Footer";
+import MarketAnalysis from "./pages/MarketAnalysis";
 
 import "./App.css";
+
+// Floating TikTok Button (Top Left)
+function FloatingTikTokButton() {
+  return (
+    <a
+      href="https://www.tiktok.com/@olinoh?lang=en"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="floating-tiktok-btn"
+      aria-label="Learn how to use the site on TikTok"
+      title="Watch Tutorials & Info on TikTok"
+    >
+      <svg
+        className="tiktok-icon"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        width="20"
+        height="20"
+      >
+        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 1 1-2.06-2.77V9.32a6.34 6.34 0 1 0 5.51 6.22V8.92a8.28 8.28 0 0 0 4.77 1.47V6.94a4.8 4.8 0 0 1-1.00-.25z" />
+      </svg>
+      <span className="tiktok-btn-text">How to Use</span>
+    </a>
+  );
+}
 
 function FloatingChatWidget() {
   const navigate = useNavigate();
@@ -70,13 +96,24 @@ function NavigationBar() {
                   className={`account-select ${accountType === "real" ? "select-real" : "select-demo"}`}
                 >
                   <option value="demo">Demo ({accountData?.account || "Demo"})</option>
-                  <option value="real">Real ({accountData?.account || "Real"})</option>
+                  <option value="real">Real (ROT92613117)</option>
                 </select>
               </div>
+
               <div className="badge-divider"></div>
-              <div className="account-balance">
-                ${(accountData?.balance ?? 0).toFixed(2)} {accountData?.currency || "USD"}
+
+              <div className="balances-container">
+                {accountType === "demo" ? (
+                  <div className="account-balance demo-balance-container">
+                    <span className="balance-label"></span> ${(accountData?.demoBalance ?? accountData?.balance ?? 0).toFixed(2)} {accountData?.currency || "USD"}
+                  </div>
+                ) : (
+                  <div className="account-balance real-balance-container">
+                    <span className="balance-label"></span> ${(accountData?.realBalance ?? accountData?.balance ?? 0).toFixed(2)} {accountData?.currency || "USD"}
+                  </div>
+                ) }
               </div>
+
               <button onClick={handleDisconnect} className="disconnect-btn">
                 Disconnect
               </button>
@@ -98,6 +135,9 @@ export default function App() {
     <TradingProvider>
       <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
         <div className="app-container">
+          {/* Floating TikTok Button at Top Left */}
+          <FloatingTikTokButton />
+
           <NavigationBar />
           <main className="app-main">
             <Routes>
@@ -105,13 +145,14 @@ export default function App() {
               <Route path="/bots" element={<BotsPage />} />
               <Route path="/history" element={<HistoryPage />} />
               <Route path="/contact" element={<ContactPage />} />
+              <Route path="/co" element={<MarketAnalysis />} />
             </Routes>
           </main>
           
           {/* Floating Chat Widget */}
           <FloatingChatWidget />
 
-          < Footer />
+          <Footer />
         </div>
       </BrowserRouter>
     </TradingProvider>

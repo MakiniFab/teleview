@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useTrading } from "../context/TradingContext";
-import "./AegisEngine.css";
+import "./NexusEngine.css";
 
 const API_BASE = "https://api.derivws.com";
 const APP_ID = "34jtvKMAMvumIpF2SDF0D";
@@ -72,7 +72,7 @@ export default function NexusEngine({ disabled = false }) {
     if (saved && JSON.parse(saved).stopLoss !== undefined) {
       return JSON.parse(saved).stopLoss;
     }
-    return minStake * 100;
+    return minStake * 30;
   });
 
   // UI Counters directly from local storage if available
@@ -218,7 +218,7 @@ export default function NexusEngine({ disabled = false }) {
     
     // Recalculate limits dynamically
     setTakeProfit(val * 5);
-    setStopLoss(val * 100);
+    setStopLoss(val * 30);
   };
 
   const handleRatioChange = (e) => {
@@ -929,12 +929,12 @@ export default function NexusEngine({ disabled = false }) {
         </div>
 
         <div className="form-field">
-          <label>Stop Loss ($ Max Loss, Default = 100x Stake)</label>
+          <label>Stop Loss ($ Max Loss, Default = 30x Stake)</label>
           <input
             type="number"
             step="1.00"
             min="0"
-            placeholder={(minStake * 100).toFixed(2)}
+            placeholder={(minStake * 30).toFixed(2)}
             value={stopLoss}
             onChange={handleStopLossChange}
             disabled={bot2State.isTrading || disabled}

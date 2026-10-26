@@ -260,7 +260,7 @@ export default function HomePage() {
                   <img src="/tiktok.png" alt="TikTok" className="social-icon" />
                 </a>
                 <a
-                  href="https://www.tiktok.com/@olinoh?lang=en"
+                  href="https://www.youtube.com/@Autom8-Deriv-Traders"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="social-link"
@@ -284,7 +284,7 @@ export default function HomePage() {
                   <img src="/x.png" alt="X (Twitter)" className="social-icon" />
                 </a>
                 <a
-                  href="https://www.tiktok.com/@olinoh?lang=en"
+                  href="https://t.me/Rizromano"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="social-link"

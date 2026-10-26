@@ -43,7 +43,7 @@ export default function ContactPage() {
           <h3>Telegram Support</h3>
           <p>Instant answers for deposits, bot setup & trading signals.</p>
           <a
-            href="https://t.me/your_telegram_handle"
+            href="https://t.me/Rizromano"
             target="_blank"
             rel="noopener noreferrer"
             className="action-btn telegram-btn"
@@ -57,21 +57,12 @@ export default function ContactPage() {
           <h3>WhatsApp Help Desk</h3>
           <p>Direct assistance for account configuration and funding.</p>
           <a
-            href="https://wa.me/your_whatsapp_number"
+            href="https://wa.me/254704579252"
             target="_blank"
             rel="noopener noreferrer"
             className="action-btn whatsapp-btn"
           >
             Message on WhatsApp
-          </a>
-        </div>
-
-        <div className="contact-card">
-          <div className="card-icon">✉️</div>
-          <h3>Email Support</h3>
-          <p>Detailed technical queries and account assistance.</p>
-          <a href="mailto:support@yourdomain.com" className="action-btn email-btn">
-            Send an Email
           </a>
         </div>
       </div>
@@ -91,7 +82,7 @@ export default function ContactPage() {
             <img src="/tiktok.png" alt="TikTok" className="social-icon" />
           </a>
           <a
-            href="https://www.youtube.com/@olinoh"
+            href="https://www.youtube.com/@Autom8-Deriv-Traders"
             target="_blank"
             rel="noopener noreferrer"
             className="social-link"
@@ -100,7 +91,7 @@ export default function ContactPage() {
             <img src="/youtube.png" alt="YouTube" className="social-icon" />
           </a>
           <a
-            href="https://www.instagram.com/@olinoh"
+            href="https://www.tiktok.com/@olinoh?lang=en"
             target="_blank"
             rel="noopener noreferrer"
             className="social-link"
@@ -109,7 +100,7 @@ export default function ContactPage() {
             <img src="/insta.jfif" alt="Instagram" className="social-icon" />
           </a>
           <a
-            href="https://x.com/@olinoh"
+            href="https://www.tiktok.com/@olinoh?lang=en"
             target="_blank"
             rel="noopener noreferrer"
             className="social-link"
@@ -118,7 +109,7 @@ export default function ContactPage() {
             <img src="/x.png" alt="X (Twitter)" className="social-icon" />
           </a>
           <a
-            href="https://t.me/olinoh"
+            href="https://t.me/Rizromano"
             target="_blank"
             rel="noopener noreferrer"
             className="social-link"

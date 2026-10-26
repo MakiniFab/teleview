@@ -1,100 +1,476 @@
-/* Quantum Spike Pro Neon Emerald & Cyber Amber Theme */
+/* ==========================================================================
+   1. Theme Variables & Color Tokens (QuantumSpikePro: Deep Emerald & Matrix Green)
+   ========================================================================== */
 
-.quantum-card {
-  border: 1px solid rgba(0, 229, 153, 0.25) !important;
-  box-shadow: 0 0 15px rgba(0, 229, 153, 0.08);
+:root,
+[data-theme="dark"] {
+  /* Surfaces & Backgrounds */
+  --card-bg: rgba(10, 22, 18, 0.88);
+  --card-border: rgba(20, 50, 38, 0.8);
+  --card-border-active: #00c076;
+  --input-bg: #030a07;
+  --input-border: #112e22;
+  --console-bg: #020504;
+
+  /* Typography */
+  --text-primary: #ecfdf5;
+  --text-secondary: #a7f3d0;
+  --text-muted: #6ee7b7;
+
+  /* Status & Accents (Dark: Neon Matrix Green & Emerald Glow) */
+  --accent-brand: #00c076;
+  --accent-green: #10b981;
+  --accent-green-glow: rgba(16, 185, 129, 0.35);
+  --accent-red: #ef4444;
+  --accent-red-glow: rgba(239, 68, 68, 0.35);
+  --accent-amber: #f59e0b;
+
+  /* Badges & Highlights */
+  --premium-badge-bg: linear-gradient(135deg, #00c076 0%, #059669 100%);
+  --account-tag-bg: rgba(0, 192, 118, 0.12);
+  --account-tag-border: rgba(0, 192, 118, 0.35);
+  --account-tag-text: #34d399;
+
+  /* Notice Banners */
+  --notice-bg: rgba(245, 158, 11, 0.1);
+  --notice-border: rgba(245, 158, 11, 0.3);
+  --notice-text: #fbbf24;
+
+  /* Buttons */
+  --btn-primary-bg: linear-gradient(135deg, #00c076 0%, #047857 100%);
+  --btn-primary-text: #ffffff;
+  --btn-secondary-bg: rgba(17, 46, 34, 0.8);
+  --btn-secondary-text: #a7f3d0;
+  --btn-stop-bg: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+
+  /* Shadows & Glass */
+  --card-shadow: 0 20px 40px -15px rgba(2, 5, 4, 0.8);
+  --active-glow: 0 0 25px rgba(0, 192, 118, 0.3);
 }
 
-.quantum-card.active-trading {
-  border-color: #00e599 !important;
-  box-shadow: 0 0 25px rgba(0, 229, 153, 0.25);
+[data-theme="light"] {
+  /* Surfaces & Backgrounds */
+  --card-bg: rgba(240, 253, 244, 0.94);
+  --card-border: rgba(167, 243, 208, 0.9);
+  --card-border-active: #059669;
+  --input-bg: #ecfdf5;
+  --input-border: #a7f3d0;
+  --console-bg: #064e3b;
+
+  /* Typography */
+  --text-primary: #064e3b;
+  --text-secondary: #047857;
+  --text-muted: #059669;
+
+  /* Status & Accents (Light: Forest Pine & Bright Emerald) */
+  --accent-brand: #059669;
+  --accent-green: #047857;
+  --accent-green-glow: rgba(4, 120, 87, 0.2);
+  --accent-red: #dc2626;
+  --accent-red-glow: rgba(220, 38, 38, 0.2);
+  --accent-amber: #d97706;
+
+  /* Badges & Highlights */
+  --premium-badge-bg: linear-gradient(135deg, #059669 0%, #065f46 100%);
+  --account-tag-bg: rgba(5, 150, 105, 0.08);
+  --account-tag-border: rgba(5, 150, 105, 0.25);
+  --account-tag-text: #047857;
+
+  /* Notice Banners */
+  --notice-bg: rgba(217, 119, 6, 0.08);
+  --notice-border: rgba(217, 119, 6, 0.25);
+  --notice-text: #b45309;
+
+  /* Buttons */
+  --btn-primary-bg: linear-gradient(135deg, #059669 0%, #047857 100%);
+  --btn-primary-text: #ffffff;
+  --btn-secondary-bg: #d1fae5;
+  --btn-secondary-text: #065f46;
+  --btn-stop-bg: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+
+  /* Shadows & Glass */
+  --card-shadow: 0 15px 35px -10px rgba(5, 150, 105, 0.15);
+  --active-glow: 0 0 25px rgba(5, 150, 105, 0.25);
 }
 
-.quantum-glow-text {
-  color: #00e599 !important;
-  text-shadow: 0 0 8px rgba(0, 229, 153, 0.4);
+/* ==========================================================================
+   2. Card Wrapper & Header Layout
+   ========================================================================== */
+
+.bot-card.premium-card {
+  position: relative;
+  width: 100%;
+  max-width: 850px;
+  margin: 0 auto;
+  padding: 1.25rem;
+  border-radius: 18px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
 }
 
-.quantum-badge {
-  background: linear-gradient(135deg, #00e599 0%, #ffb800 100%) !important;
-  color: #0a0f1d !important;
+/* Dynamic Glowing State when Active Trading */
+.bot-card.premium-card.active-trading {
+  border-color: var(--card-border-active);
+  box-shadow: var(--card-shadow), var(--active-glow);
+  animation: pulseQuantumBorder 3s infinite alternate;
+}
+
+@keyframes pulseQuantumBorder {
+  0% {
+    box-shadow: var(--card-shadow), 0 0 15px var(--accent-green-glow);
+  }
+  100% {
+    box-shadow: var(--card-shadow), 0 0 35px var(--accent-green-glow);
+  }
+}
+
+/* Bot Header Structure */
+.bot-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.bot-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.title-with-badge {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.title-with-badge h2 {
+  margin: 0;
+  font-size: 1.35rem;
   font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
 }
 
-.quantum-account-tag {
-  border: 1px solid #ffb800 !important;
-  color: #ffb800 !important;
-  background: rgba(255, 184, 0, 0.1) !important;
+.premium-badge {
+  background: var(--premium-badge-bg);
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-.quantum-notice {
-  background: rgba(0, 229, 153, 0.08) !important;
-  border-left: 3px solid #00e599 !important;
-  color: #e2e8f0 !important;
+.bot-subtitle {
+  font-size: 0.825rem;
+  color: var(--text-muted);
+  font-weight: 500;
 }
 
-.quantum-ribbon {
-  border-color: rgba(0, 229, 153, 0.15) !important;
-  background: rgba(10, 15, 29, 0.6) !important;
+.account-tag {
+  align-self: flex-start;
+  background: var(--account-tag-bg);
+  border: 1px solid var(--account-tag-border);
+  color: var(--account-tag-text);
+  font-size: 0.725rem;
+  font-weight: 700;
+  padding: 0.3rem 0.65rem;
+  border-radius: 8px;
+  letter-spacing: 0.5px;
 }
 
-.quantum-status-on {
-  color: #00e599 !important;
-  text-shadow: 0 0 8px rgba(0, 229, 153, 0.6);
+/* ==========================================================================
+   3. Notice & Explanation Banners
+   ========================================================================== */
+
+.bot-explanation {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
 }
 
-.direction-tag.call {
-  color: #00e599 !important;
-  font-weight: bold;
+.notice-highlight {
+  margin: 0;
+  padding: 0.65rem 0.85rem;
+  background: var(--notice-bg);
+  border: 1px solid var(--notice-border);
+  border-radius: 10px;
+  color: var(--notice-text);
+  font-size: 0.825rem;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
-.direction-tag.put {
-  color: #ffb800 !important;
-  font-weight: bold;
+.risk-warning-banner {
+  margin: 0;
+  line-height: 1.45;
+  color: var(--text-secondary) !important;
 }
 
-.quantum-win {
-  color: #00e599 !important;
+/* ==========================================================================
+   4. Form Grid & Input Controls (Mobile-First Overrides)
+   ========================================================================== */
+
+.config-grid.triple-field,
+.config-grid.dual-field {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 0.85rem !important;
+  margin-bottom: 1.25rem !important;
 }
 
-.quantum-btn {
-  background: linear-gradient(135deg, #00e599 0%, #00a86b 100%) !important;
-  color: #050b14 !important;
-  font-weight: bold;
-  box-shadow: 0 4px 15px rgba(0, 229, 153, 0.3) !important;
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
-.quantum-btn:hover {
-  background: linear-gradient(135deg, #00ffaa 0%, #00c47d 100%) !important;
-  box-shadow: 0 6px 20px rgba(0, 229, 153, 0.5) !important;
+.form-field label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
-.quantum-secondary-btn {
-  border: 1px solid #ffb800 !important;
-  color: #ffb800 !important;
-  background: transparent !important;
+.form-field input,
+.form-field select {
+  width: 100%;
+  height: 42px;
+  padding: 0 0.75rem;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
-.quantum-secondary-btn:hover {
-  background: rgba(255, 184, 0, 0.15) !important;
+.form-field input:focus,
+.form-field select:focus {
+  border-color: var(--accent-brand);
+  box-shadow: 0 0 0 3px rgba(0, 192, 118, 0.2);
 }
 
-.quantum-stop-btn {
-  background: linear-gradient(135deg, #ffb800 0%, #d97706 100%) !important;
-  color: #050b14 !important;
-  font-weight: bold;
+.form-field input:disabled,
+.form-field select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.quantum-console-wrapper {
-  border-color: rgba(0, 229, 153, 0.2) !important;
+.form-field > div {
+  display: flex;
+  gap: 0.5rem !important;
 }
 
-.quantum-console-title {
-  color: #ffb800 !important;
-  border-bottom: 1px solid rgba(255, 184, 0, 0.15) !important;
+/* ==========================================================================
+   5. Metrics Ribbon Section
+   ========================================================================== */
+
+.metrics-ribbon {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
 }
 
-.quantum-logs {
-  color: #00e599 !important;
-  background: #040812 !important;
+.metric-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.metric-label {
+  font-size: 0.725rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.metric-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.metric-value.status-on {
+  color: var(--accent-green);
+  text-shadow: 0 0 10px var(--accent-green-glow);
+}
+
+.metric-value.status-off {
+  color: var(--text-muted);
+}
+
+.metric-value.highlight-win {
+  color: var(--accent-amber);
+}
+
+/* ==========================================================================
+   6. Control Action Buttons
+   ========================================================================== */
+
+.controls {
+  width: 100%;
+  margin-bottom: 1.25rem;
+}
+
+.dual-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.start-btn,
+.stop-btn {
+  width: 100%;
+  height: 48px;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.925rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.start-btn.premium-btn {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+}
+
+.start-btn.new-cycle-btn {
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+  border: 1px solid var(--card-border);
+}
+
+.stop-btn {
+  background: var(--btn-stop-bg);
+  color: #ffffff;
+}
+
+.start-btn:hover:not(:disabled),
+.stop-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+.start-btn:active:not(:disabled),
+.stop-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.start-btn:disabled,
+.stop-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ==========================================================================
+   7. Terminal Output Console
+   ========================================================================== */
+
+.console-wrapper {
+  background: var(--console-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.console-title {
+  padding: 0.5rem 0.85rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--card-border);
+  font-size: 0.725rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.logs-console {
+  margin: 0;
+  padding: 0.85rem;
+  max-height: 140px;
+  overflow-y: auto;
+  font-family: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+  font-size: 0.775rem;
+  color: var(--accent-green);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.logs-console::-webkit-scrollbar {
+  width: 4px;
+}
+
+.logs-console::-webkit-scrollbar-thumb {
+  background: var(--card-border);
+  border-radius: 2px;
+}
+
+/* ==========================================================================
+   8. Responsive Breakpoints (Tablet & Desktop Expansion)
+   ========================================================================== */
+
+@media (min-width: 600px) {
+  .bot-card.premium-card {
+    padding: 1.75rem;
+  }
+
+  .bot-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .account-tag {
+    align-self: center;
+  }
+
+  .config-grid.triple-field {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  .config-grid.dual-field {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .metrics-ribbon {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .dual-controls {
+    flex-direction: row;
+  }
+
+  .dual-controls .start-btn {
+    flex: 1;
+  }
 }

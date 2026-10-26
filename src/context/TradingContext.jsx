@@ -37,8 +37,8 @@ export class StakingEngine {
   calculateModifier(baseRawStake) {
     const stepSize = this.MIN_STAKE;
 
-    if (baseRawStake >= 50 * stepSize) return 4;
-    if (baseRawStake >= 20 * stepSize) return 3;
+    if (baseRawStake >= 25 * stepSize) return 4;
+    if (baseRawStake >= 15 * stepSize) return 3;
     if (baseRawStake >= 9 * stepSize) return 2;
     if (baseRawStake >= 3 * stepSize) return 1;
     return 0;

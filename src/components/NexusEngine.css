@@ -1,470 +1,453 @@
 /* ==========================================================================
-   NEXUS ENGINE - CYBER VIOLET & AMBER GOLD DYNAMIC LIGHT (FULL COMPLETE STYLESHEET)
-   Pure Base, Crystal Text & High-Octane Deep Cyber Violet & Gold RGB Accents
+   1. Theme Variables & Color Tokens (NexusEngine: Cyberpunk Cyan & Electric Violet)
    ========================================================================== */
 
-/* Universal Dynamic Variables - Nexus Theme Override */
-.bot-card.premium-card {
-  --nexus-white-pure: #ffffff;
-  --nexus-white-glass: rgba(255, 255, 255, 0.95);
-  --nexus-border-soft: #e0e7ff;
-  --nexus-border-medium: #c7d2fe;
-  
-  --nexus-black-text: #080811;
-  --nexus-black-muted: #312e81;
+:root,
+[data-theme="dark"] {
+  /* Surfaces & Backgrounds */
+  --card-bg: rgba(10, 14, 26, 0.88);
+  --card-border: rgba(30, 41, 80, 0.8);
+  --card-border-active: #00f0ff;
+  --input-bg: #04060c;
+  --input-border: #1a254a;
+  --console-bg: #020307;
 
-  /* High-Vibrancy Nexus RGB Palette */
-  --nexus-neon-violet: #7c3aed;
-  --nexus-neon-purple: #9333ea;
-  --nexus-neon-gold: #f59e0b;
-  --nexus-neon-cyan: #06b6d4;
-  --nexus-neon-rose: #f43f5e;
-  
-  /* Vibrant Glow Effects */
-  --nexus-glow-violet: rgba(124, 58, 237, 0.28);
-  --nexus-glow-gold: rgba(245, 158, 11, 0.35);
-  --nexus-glow-cyan: rgba(6, 182, 212, 0.3);
-  --nexus-glow-rose: rgba(244, 63, 94, 0.3);
+  /* Typography */
+  --text-primary: #e0f2fe;
+  --text-secondary: #93c5fd;
+  --text-muted: #64748b;
 
-  --nexus-radius-sm: 8px;
-  --nexus-radius-md: 14px;
-  --nexus-radius-lg: 22px;
+  /* Status & Accents (Dark: Neon Cyan & Electric Violet Glow) */
+  --accent-brand: #00f0ff;
+  --accent-green: #00ffcc;
+  --accent-green-glow: rgba(0, 255, 204, 0.35);
+  --accent-red: #ff0055;
+  --accent-red-glow: rgba(255, 0, 85, 0.35);
+  --accent-amber: #00f0ff;
 
-  --nexus-font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
-  --nexus-font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+  /* Badges & Highlights */
+  --premium-badge-bg: linear-gradient(135deg, #00f0ff 0%, #7000ff 100%);
+  --account-tag-bg: rgba(0, 240, 255, 0.12);
+  --account-tag-border: rgba(0, 240, 255, 0.35);
+  --account-tag-text: #67e8f9;
+
+  /* Notice Banners */
+  --notice-bg: rgba(112, 0, 255, 0.12);
+  --notice-border: rgba(112, 0, 255, 0.35);
+  --notice-text: #c084fc;
+
+  /* Buttons */
+  --btn-primary-bg: linear-gradient(135deg, #00f0ff 0%, #0284c7 100%);
+  --btn-primary-text: #04060c;
+  --btn-secondary-bg: rgba(26, 37, 74, 0.8);
+  --btn-secondary-text: #bae6fd;
+  --btn-stop-bg: linear-gradient(135deg, #ff0055 0%, #be123c 100%);
+
+  /* Shadows & Glass */
+  --card-shadow: 0 20px 40px -15px rgba(2, 3, 7, 0.8);
+  --active-glow: 0 0 25px rgba(0, 240, 255, 0.3);
 }
 
-/* Base Card Shell with Dynamic Ambient Glow */
+[data-theme="light"] {
+  /* Surfaces & Backgrounds */
+  --card-bg: rgba(248, 250, 252, 0.94);
+  --card-border: rgba(186, 230, 253, 0.9);
+  --card-border-active: #0284c7;
+  --input-bg: #f0f9ff;
+  --input-border: #bae6fd;
+  --console-bg: #0f172a;
+
+  /* Typography */
+  --text-primary: #082f49;
+  --text-secondary: #0369a1;
+  --text-muted: #0284c7;
+
+  /* Status & Accents (Light: Deep Cyber Blue & Neon Indigo) */
+  --accent-brand: #0284c7;
+  --accent-green: #0d9488;
+  --accent-green-glow: rgba(13, 148, 136, 0.2);
+  --accent-red: #e11d48;
+  --accent-red-glow: rgba(225, 29, 72, 0.2);
+  --accent-amber: #0284c7;
+
+  /* Badges & Highlights */
+  --premium-badge-bg: linear-gradient(135deg, #0284c7 0%, #7000ff 100%);
+  --account-tag-bg: rgba(2, 132, 199, 0.08);
+  --account-tag-border: rgba(2, 132, 199, 0.25);
+  --account-tag-text: #0369a1;
+
+  /* Notice Banners */
+  --notice-bg: rgba(112, 0, 255, 0.08);
+  --notice-border: rgba(112, 0, 255, 0.25);
+  --notice-text: #7c3aed;
+
+  /* Buttons */
+  --btn-primary-bg: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  --btn-primary-text: #ffffff;
+  --btn-secondary-bg: #e0f2fe;
+  --btn-secondary-text: #0369a1;
+  --btn-stop-bg: linear-gradient(135deg, #e11d48 0%, #9f1239 100%);
+
+  /* Shadows & Glass */
+  --card-shadow: 0 15px 35px -10px rgba(2, 132, 199, 0.15);
+  --active-glow: 0 0 25px rgba(2, 132, 199, 0.25);
+}
+
+/* ==========================================================================
+   2. Card Wrapper & Header Layout
+   ========================================================================== */
+
 .bot-card.premium-card {
-  box-sizing: border-box;
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: var(--nexus-white-pure) !important;
-  border: 2px solid var(--nexus-border-soft);
-  border-radius: var(--nexus-radius-lg);
-  font-family: var(--nexus-font-sans);
-  box-shadow: 
-    0 15px 35px -5px rgba(124, 58, 237, 0.08),
-    0 5px 15px rgba(0, 0, 0, 0.03);
   position: relative;
-  overflow: hidden;
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 100%;
+  max-width: 850px;
+  margin: 0 auto;
+  padding: 1.25rem;
+  border-radius: 18px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
 }
 
-/* Universal Text Override for Optimal Contrast */
-.bot-card.premium-card,
-.bot-card.premium-card * {
-  color: var(--nexus-black-text) !important;
-}
-
-/* Dynamic Live Pulsing Border when Trading */
+/* Dynamic Glowing State when Active Trading */
 .bot-card.premium-card.active-trading {
-  border-color: var(--nexus-neon-violet) !important;
-  box-shadow: 
-    0 0 25px var(--nexus-glow-violet),
-    0 15px 35px -5px rgba(124, 58, 237, 0.2);
-  animation: nexus-pulse-border 2s infinite alternate;
+  border-color: var(--card-border-active);
+  box-shadow: var(--card-shadow), var(--active-glow);
+  animation: pulseNexusBorder 3s infinite alternate;
 }
 
-@keyframes nexus-pulse-border {
-  0% { box-shadow: 0 0 15px var(--nexus-glow-violet); }
-  100% { box-shadow: 0 0 32px var(--nexus-glow-violet); }
+@keyframes pulseNexusBorder {
+  0% {
+    box-shadow: var(--card-shadow), 0 0 15px var(--accent-green-glow);
+  }
+  100% {
+    box-shadow: var(--card-shadow), 0 0 35px var(--accent-green-glow);
+  }
 }
 
-/* Header Section */
+/* Bot Header Structure */
 .bot-header {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding-bottom: 16px;
-  background-color: var(--nexus-white-pure) !important;
-  border-bottom: 2px dashed var(--nexus-border-soft);
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--card-border);
 }
 
 .bot-title-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0.35rem;
 }
 
 .title-with-badge {
   display: flex;
   align-items: center;
-  gap: 10px;
   flex-wrap: wrap;
+  gap: 0.65rem;
 }
 
 .title-with-badge h2 {
   margin: 0;
-  font-size: 1.4rem;
+  font-size: 1.35rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
 }
 
 .premium-badge {
-  font-family: var(--nexus-font-mono);
+  background: var(--premium-badge-bg);
+  color: #ffffff;
   font-size: 0.68rem;
-  font-weight: 900;
-  padding: 4px 10px;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.12), rgba(147, 51, 234, 0.22)) !important;
-  border: 2px solid var(--nexus-neon-violet);
-  border-radius: var(--nexus-radius-sm);
-  letter-spacing: 0.08em;
+  font-weight: 800;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
-  box-shadow: 0 2px 8px var(--nexus-glow-violet);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .bot-subtitle {
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-size: 0.825rem;
+  color: var(--text-muted);
+  font-weight: 500;
 }
 
 .account-tag {
   align-self: flex-start;
-  font-family: var(--nexus-font-mono);
-  font-size: 0.78rem;
-  font-weight: 800;
-  padding: 6px 12px;
-  background-color: var(--nexus-white-pure) !important;
-  border: 2px solid var(--nexus-neon-violet);
-  border-radius: var(--nexus-radius-sm);
-  box-shadow: 0 2px 10px var(--nexus-glow-violet);
+  background: var(--account-tag-bg);
+  border: 1px solid var(--account-tag-border);
+  color: var(--account-tag-text);
+  font-size: 0.725rem;
+  font-weight: 700;
+  padding: 0.3rem 0.65rem;
+  border-radius: 8px;
+  letter-spacing: 0.5px;
 }
 
-/* Interactive Modern Banners */
+/* ==========================================================================
+   3. Notice & Explanation Banners
+   ========================================================================== */
+
 .bot-explanation {
-  margin-top: 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-.notice-highlight,
-.risk-warning-banner {
-  margin: 0;
-  padding: 12px 16px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  background-color: var(--nexus-white-pure) !important;
-  border-radius: var(--nexus-radius-md);
-  line-height: 1.5;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .notice-highlight {
-  border: 2px solid var(--nexus-neon-violet);
-  box-shadow: 0 4px 15px var(--nexus-glow-violet);
+  margin: 0;
+  padding: 0.65rem 0.85rem;
+  background: var(--notice-bg);
+  border: 1px solid var(--notice-border);
+  border-radius: 10px;
+  color: var(--notice-text);
+  font-size: 0.825rem;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
 .risk-warning-banner {
-  border: 2px solid var(--nexus-neon-gold);
-  box-shadow: 0 4px 15px var(--nexus-glow-gold);
+  margin: 0;
+  line-height: 1.45;
+  color: var(--text-secondary) !important;
 }
 
-.notice-highlight:hover,
-.risk-warning-banner:hover {
-  transform: translateY(-2px);
-}
+/* ==========================================================================
+   4. Form Grid & Input Controls (Mobile-First Overrides)
+   ========================================================================== */
 
-/* Parameters & Input Grid */
-.config-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 14px;
-  margin-top: 18px;
-}
-
-.config-grid.triple-field {
-  grid-template-columns: 1fr;
+.config-grid.triple-field,
+.config-grid.dual-field {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 0.85rem !important;
+  margin-bottom: 1.25rem !important;
 }
 
 .form-field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  background-color: var(--nexus-white-pure) !important;
-  padding: 14px;
-  border: 2px solid var(--nexus-border-medium);
-  border-radius: var(--nexus-radius-md);
-  transition: all 0.25s ease;
-}
-
-.form-field:focus-within {
-  border-color: var(--nexus-neon-violet);
-  box-shadow: 0 0 15px var(--nexus-glow-violet);
-  transform: translateY(-1px);
+  gap: 0.4rem;
 }
 
 .form-field label {
-  font-size: 0.75rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
 .form-field input,
 .form-field select {
-  background-color: var(--nexus-white-pure) !important;
-  border: 2px solid var(--nexus-border-soft);
-  font-family: var(--nexus-font-mono);
-  font-size: 1.1rem;
-  font-weight: 800;
-  padding: 10px 12px;
-  border-radius: var(--nexus-radius-sm);
-  outline: none;
   width: 100%;
+  height: 42px;
+  padding: 0 0.75rem;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  outline: none;
+  transition: all 0.2s ease;
   box-sizing: border-box;
-  -webkit-text-fill-color: var(--nexus-black-text) !important;
-  transition: border-color 0.2s ease;
 }
 
 .form-field input:focus,
 .form-field select:focus {
-  border-color: var(--nexus-neon-violet);
+  border-color: var(--accent-brand);
+  box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.2);
 }
 
-/* Vibrant Metrics Cards Grid */
+.form-field input:disabled,
+.form-field select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.form-field > div {
+  display: flex;
+  gap: 0.5rem !important;
+}
+
+/* ==========================================================================
+   5. Metrics Ribbon Section
+   ========================================================================== */
+
 .metrics-ribbon {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-top: 20px;
-  width: 100%;
-  box-sizing: border-box;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
 }
 
 .metric-item {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  background-color: var(--nexus-white-pure) !important;
-  border: 2px solid var(--nexus-border-medium);
-  border-radius: var(--nexus-radius-md);
-  padding: 14px;
-  min-width: 0;
-  position: relative;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.metric-item:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.08);
-  border-color: var(--nexus-neon-violet);
+  gap: 0.25rem;
 }
 
 .metric-label {
-  font-size: 0.72rem;
-  font-weight: 800;
+  font-size: 0.725rem;
+  font-weight: 600;
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 8px;
-  display: block;
+  letter-spacing: 0.4px;
 }
 
 .metric-value {
-  display: block;
-  font-family: var(--nexus-font-mono);
-  font-size: 1.15rem;
-  font-weight: 900;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  position: relative;
-  padding-left: 10px;
-  border-left: 4px solid var(--nexus-neon-violet);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
-/* Dynamic Indicator Accents */
 .metric-value.status-on {
-  border-left-color: var(--nexus-neon-cyan);
+  color: var(--accent-green);
+  text-shadow: 0 0 10px var(--accent-green-glow);
 }
 
 .metric-value.status-off {
-  border-left-color: var(--nexus-neon-rose);
+  color: var(--text-muted);
 }
 
 .metric-value.highlight-win {
-  border-left-color: var(--nexus-neon-gold);
+  color: var(--accent-amber);
 }
 
-/* Action Control Buttons (Neon Purple & Gold High-Energy) */
+/* ==========================================================================
+   6. Control Action Buttons
+   ========================================================================== */
+
 .controls {
-  margin-top: 20px;
+  width: 100%;
+  margin-bottom: 1.25rem;
 }
 
 .dual-controls {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0.75rem;
+  width: 100%;
 }
 
 .start-btn,
 .stop-btn {
   width: 100%;
-  padding: 14px 20px;
-  font-family: var(--nexus-font-sans);
-  font-size: 0.95rem;
-  font-weight: 800;
+  height: 48px;
   border: none;
-  border-radius: var(--nexus-radius-md);
+  border-radius: 12px;
+  font-size: 0.925rem;
+  font-weight: 700;
   cursor: pointer;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
-  overflow: hidden;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.start-btn.premium-btn {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+}
+
+.start-btn.new-cycle-btn {
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+  border: 1px solid var(--card-border);
+}
+
+.stop-btn {
+  background: var(--btn-stop-bg);
+  color: #ffffff;
 }
 
 .start-btn:hover:not(:disabled),
 .stop-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  filter: brightness(1.08);
+  filter: brightness(1.1);
 }
 
 .start-btn:active:not(:disabled),
 .stop-btn:active:not(:disabled) {
-  transform: translateY(1px);
-}
-
-/* Vibrant Cyber Violet Start Button */
-.start-btn.premium-btn {
-  background: linear-gradient(135deg, #8b5cf6, #ec4899) !important;
-  box-shadow: 0 6px 20px var(--nexus-glow-violet);
-}
-
-/* Vibrant Gold Resume Button */
-.start-btn.resume-btn {
-  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
-  box-shadow: 0 6px 20px var(--nexus-glow-gold);
-}
-
-.start-btn.new-cycle-btn {
-  background-color: var(--nexus-white-pure) !important;
-  border: 2px solid var(--nexus-border-medium);
-}
-
-/* Vibrant Rose/Orange Stop Button */
-.stop-btn {
-  background: linear-gradient(135deg, #f43f5e, #e11d48) !important;
-  box-shadow: 0 6px 20px var(--nexus-glow-rose);
-}
-
-/* Crisp White Text for Filled Buttons */
-.start-btn.premium-btn,
-.start-btn.resume-btn,
-.stop-btn {
-  color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  transform: translateY(0);
 }
 
 .start-btn:disabled,
 .stop-btn:disabled {
-  opacity: 0.35;
+  opacity: 0.5;
   cursor: not-allowed;
   transform: none;
-  box-shadow: none;
 }
 
 /* ==========================================================================
-   NEXUS TERMINAL CONSOLE STYLING
-   Clean white background, crisp black log text, Cyber Violet accents
+   7. Terminal Output Console
    ========================================================================== */
 
-/* Outer Terminal Container */
 .console-wrapper {
-  margin-top: 20px;
-  background-color: #ffffff !important;
-  border: 2px solid #7c3aed; /* Vibrant Cyber Violet Accent */
+  background: var(--console-bg);
+  border: 1px solid var(--card-border);
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.15);
   overflow: hidden;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.console-wrapper:hover {
-  border-color: #f59e0b; /* Pulsing Gold Accent on Hover */
-  box-shadow: 0 10px 28px rgba(245, 158, 11, 0.2);
-}
-
-/* Header Bar */
 .console-title {
-  display: flex;
-  align-items: center;
-  font-family: var(--nexus-font-mono);
-  font-size: 0.78rem;
-  font-weight: 800;
+  padding: 0.5rem 0.85rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--card-border);
+  font-size: 0.725rem;
+  font-weight: 700;
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  background: linear-gradient(90deg, rgba(124, 58, 237, 0.08), #ffffff) !important;
-  padding: 10px 14px;
-  color: #000000 !important;
-  border-bottom: 2px solid #c7d2fe;
+  letter-spacing: 0.5px;
 }
 
-/* Live Indicator Dot */
-.console-title::before {
-  content: '';
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  margin-right: 8px;
-  background-color: #7c3aed; /* Violet Live Dot */
-  border-radius: 50%;
-  box-shadow: 0 0 8px rgba(124, 58, 237, 0.8);
-}
-
-/* Main Log Console Output Area */
 .logs-console {
   margin: 0;
-  padding: 14px;
-  height: 160px;
+  padding: 0.85rem;
+  max-height: 140px;
   overflow-y: auto;
-  font-family: var(--nexus-font-mono);
-  font-size: 0.82rem;
-  font-weight: 700;
-  line-height: 1.6;
-  color: #000000 !important;
-  background-color: #ffffff !important;
+  font-family: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+  font-size: 0.775rem;
+  color: var(--accent-green);
+  line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
-  box-sizing: border-box;
 }
 
-/* Scrollbar Customization */
 .logs-console::-webkit-scrollbar {
-  width: 6px;
-}
-
-.logs-console::-webkit-scrollbar-track {
-  background-color: #ffffff;
+  width: 4px;
 }
 
 .logs-console::-webkit-scrollbar-thumb {
-  background-color: #7c3aed; /* Violet Scroll Thumb */
-  border-radius: 4px;
-}
-
-.logs-console::-webkit-scrollbar-thumb:hover {
-  background-color: #f59e0b; /* Gold Hover Accent */
+  background: var(--card-border);
+  border-radius: 2px;
 }
 
 /* ==========================================================================
-   Responsive Breakpoints
+   8. Responsive Breakpoints (Tablet & Desktop Expansion)
    ========================================================================== */
 
 @media (min-width: 600px) {
   .bot-card.premium-card {
-    padding: 28px;
+    padding: 1.75rem;
   }
 
   .bot-header {
     flex-direction: row;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
   }
 
   .account-tag {
@@ -472,11 +455,15 @@
   }
 
   .config-grid.triple-field {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  .config-grid.dual-field {
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 
   .metrics-ribbon {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(5, 1fr);
   }
 
   .dual-controls {
@@ -485,28 +472,5 @@
 
   .dual-controls .start-btn {
     flex: 1;
-  }
-
-  .logs-console {
-    height: 190px;
-    font-size: 0.85rem;
-  }
-}
-
-@media (min-width: 900px) {
-  .title-with-badge h2 {
-    font-size: 1.6rem;
-  }
-
-  .metrics-ribbon {
-    grid-template-columns: repeat(6, 1fr);
-  }
-
-  .metric-item {
-    padding: 16px 12px;
-  }
-
-  .logs-console {
-    height: 230px;
   }
 }

@@ -480,6 +480,64 @@ html[data-theme="light"] {
   outline-offset: 3px;
 }
 
+/* Floating TikTok Button (Top Left) */
+.floating-tiktok-btn {
+  position: fixed;
+  top: 200px;
+  left: 20px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(18, 18, 24, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 30px;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.floating-tiktok-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  background: #000000;
+  border-color: #25f4ee;
+  box-shadow: -2px 2px 12px rgba(37, 244, 238, 0.4), 
+               2px -2px 12px rgba(254, 44, 85, 0.4);
+  color: #ffffff;
+}
+
+.tiktok-icon {
+  fill: #25f4ee;
+  transition: filter 0.3s ease;
+}
+
+.floating-tiktok-btn:hover .tiktok-icon {
+  filter: drop-shadow(1px 1px 0px #fe2c55);
+}
+
+.tiktok-btn-text {
+  letter-spacing: 0.3px;
+}
+
+/* Hide text on mobile to keep UI clean */
+@media (max-width: 600px) {
+  .floating-tiktok-btn {
+    top: 200px;
+    left: 15px;
+    padding: 8px;
+    border-radius: 50%;
+  }
+
+  .tiktok-btn-text {
+    display: none;
+  }
+}
+
 /* Desktop & Larger Screens (≥ 768px) */
 @media (min-width: 768px) {
   .floating-chat-btn {

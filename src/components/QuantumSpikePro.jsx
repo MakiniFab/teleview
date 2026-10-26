@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useTrading } from "../context/TradingContext";
-import "./AegisEngine.css";
+import "./QuantumSpikePro.css";
 
 const API_BASE = "https://api.derivws.com";
 const APP_ID = "34jtvKMAMvumIpF2SDF0D";
 const CURRENCY = "USD";
-const STORAGE_KEY = "quantum_spike_pro_session_v3";
+const STORAGE_KEY = "quantum_spike_session_v1";
 
 const VOLATILITY_MARKETS = [
   { id: "R_10", label: "Volatility 10 Index" },
@@ -72,7 +72,7 @@ export default function QuantumSpikePro({ disabled = false }) {
     if (saved && JSON.parse(saved).stopLoss !== undefined) {
       return JSON.parse(saved).stopLoss;
     }
-    return minStake * 100;
+    return minStake * 30;
   });
 
   // UI Counters directly from local storage if available
@@ -93,7 +93,13 @@ export default function QuantumSpikePro({ disabled = false }) {
     return (data.totalSettledCount || 0) > 0 || (data.bankedWinsCount || 0) > 0;
   });
 
-  const requestIdRef = useRef(300);
+  // Dynamic Contract Type Tracking (PUT / CALL alternating on loss)
+  const [currentContractType, setCurrentContractType] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved).currentContractType || "PUT" : "PUT";
+  });
+
+  const requestIdRef = useRef(500);
   const isExecutingRef = useRef(false);
   const activeStakeRef = useRef(1.0);
   const settledIdsRef = useRef(new Set());
@@ -102,13 +108,9 @@ export default function QuantumSpikePro({ disabled = false }) {
   const lossStreakRef = useRef(0);
   const totalSessionProfitRef = useRef(0);
 
-  // Custom Direction Tracking: Default is "CALL"
-  const currentDirectionRef = useRef("CALL");
-
   // Persistent market symbol for the entire duration of a trade block
   const currentBlockSymbolRef = useRef(null);
 
-  // Pick a single random market for the block
   const selectNewBlockMarket = () => {
     const randomIndex = Math.floor(Math.random() * VOLATILITY_MARKETS.length);
     const selected = VOLATILITY_MARKETS[randomIndex].id;
@@ -130,11 +132,10 @@ export default function QuantumSpikePro({ disabled = false }) {
         if (parsed.currentBlockSymbol) {
           currentBlockSymbolRef.current = parsed.currentBlockSymbol;
         }
-        if (parsed.currentDirection) {
-          currentDirectionRef.current = parsed.currentDirection;
+        if (parsed.currentContractType) {
+          setCurrentContractType(parsed.currentContractType);
         }
 
-        // Restore saved trade history into state
         if (Array.isArray(parsed.history) && parsed.history.length > 0) {
           setBot3State((prev) => ({
             ...prev,
@@ -146,16 +147,15 @@ export default function QuantumSpikePro({ disabled = false }) {
           engineRef3.current.restoreState(parsed.engineState);
         }
       } catch (err) {
-        console.error("Failed to restore QuantumSpikePro session from storage:", err);
+        console.error("Failed to restore QuantumSpike session from storage:", err);
       }
     }
   }, [engineRef3, setBot3State]);
 
-  // Calculated target values
   const unitProfit = Number(minStake) * Number(profitRatio);
   const blockTargetProfit = 250 * unitProfit;
 
-  const saveSessionToStorage = (updatedWins, updatedSettled, updatedProfit) => {
+  const saveSessionToStorage = (updatedWins, updatedSettled, updatedProfit, contractTypeVal) => {
     const payload = {
       minStake: Number(minStake),
       profitRatio: Number(profitRatio),
@@ -169,7 +169,7 @@ export default function QuantumSpikePro({ disabled = false }) {
       lossStreak: lossStreakRef.current,
       totalSessionProfit: updatedProfit,
       currentBlockSymbol: currentBlockSymbolRef.current,
-      currentDirection: currentDirectionRef.current,
+      currentContractType: contractTypeVal,
       history: bot3State.history,
       engineState: engineRef3?.current?.exportState
         ? engineRef3.current.exportState()
@@ -183,7 +183,7 @@ export default function QuantumSpikePro({ disabled = false }) {
     const time = new Date().toLocaleTimeString();
     setBot3State((prev) => ({
       ...prev,
-      logs: [...prev.logs.slice(-99), `[QUANTUM-SPIKE-PRO | ${time}] ${msg}`],
+      logs: [...prev.logs.slice(-99), `[QUANTUM-PRO | ${time}] ${msg}`],
     }));
   };
 
@@ -216,7 +216,7 @@ export default function QuantumSpikePro({ disabled = false }) {
     const val = Math.max(1.0, parseFloat(e.target.value) || 1.0);
     setMinStake(val);
     setTakeProfit(val * 5);
-    setStopLoss(val * 100);
+    setStopLoss(val * 30);
   };
 
   const handleRatioChange = (e) => {
@@ -259,18 +259,12 @@ export default function QuantumSpikePro({ disabled = false }) {
   const getTimeoutDurationMs = () => {
     const val = Number(durationValue);
     switch (durationUnit) {
-      case "t":
-        return val * 2000;
-      case "s":
-        return val * 1000;
-      case "m":
-        return val * 60 * 1000;
-      case "h":
-        return val * 60 * 60 * 1000;
-      case "d":
-        return val * 24 * 60 * 60 * 1000;
-      default:
-        return 120000;
+      case "t": return val * 2000;
+      case "s": return val * 1000;
+      case "m": return val * 60 * 1000;
+      case "h": return val * 60 * 60 * 1000;
+      case "d": return val * 24 * 60 * 60 * 1000;
+      default: return 120000;
     }
   };
 
@@ -314,7 +308,6 @@ export default function QuantumSpikePro({ disabled = false }) {
       selectNewBlockMarket();
     }
     const activeSymbol = currentBlockSymbolRef.current;
-    const activeDirection = currentDirectionRef.current;
 
     try {
       ws.send(
@@ -322,7 +315,7 @@ export default function QuantumSpikePro({ disabled = false }) {
           proposal: 1,
           amount: stake,
           basis: "stake",
-          contract_type: activeDirection,
+          contract_type: currentContractType,
           currency: CURRENCY,
           duration: Number(durationValue),
           duration_unit: durationUnit,
@@ -331,7 +324,7 @@ export default function QuantumSpikePro({ disabled = false }) {
         })
       );
       addLog(
-        `📈 PROPOSAL REQUEST: Market=${activeSymbol} | Type=${activeDirection} | Duration=${durationValue}${durationUnit} | Calculated Stake=$${stake.toFixed(2)}`
+        `📈 PROPOSAL REQUEST: Market=${activeSymbol} | Type=${currentContractType} | Duration=${durationValue}${durationUnit} | Calculated Stake=$${stake.toFixed(2)}`
       );
     } catch (err) {
       addLog(`❌ PROPOSAL FAILED: ${err.message}`);
@@ -343,7 +336,7 @@ export default function QuantumSpikePro({ disabled = false }) {
     lossStreakRef.current = 0;
     totalSessionProfitRef.current = 0;
     currentBlockSymbolRef.current = null;
-    currentDirectionRef.current = "CALL"; // Reset to default CALL direction
+    setCurrentContractType("PUT");
     setBankedWinsCount(0);
     setTotalSettledCount(0);
     settledIdsRef.current.clear();
@@ -381,7 +374,7 @@ export default function QuantumSpikePro({ disabled = false }) {
 
     resetSessionData();
     selectNewBlockMarket();
-    addLog(`🚀 INITIALIZING FRESH TRADE BLOCK`);
+    addLog(`🚀 INITIALIZING FRESH TRADE BLOCK (QuantumSpikePro)`);
     executeStart();
   };
 
@@ -398,7 +391,7 @@ export default function QuantumSpikePro({ disabled = false }) {
     }
 
     addLog(
-      `▶️ RESUMING SESSION: Market=${currentBlockSymbolRef.current} | Direction=${currentDirectionRef.current} | Saved Wins=${bankedWinsCount} | Settled Trades=${totalSettledCount}`
+      `▶️ RESUMING SESSION: Market=${currentBlockSymbolRef.current} | Type=${currentContractType} | Saved Wins=${bankedWinsCount}`
     );
     executeStart();
   };
@@ -406,7 +399,6 @@ export default function QuantumSpikePro({ disabled = false }) {
   const stopBot = () => {
     isTradingRef.current = false;
     isExecutingRef.current = false;
-
     clearExecutionTimeout();
 
     if (wsRef3.current) {
@@ -519,16 +511,12 @@ export default function QuantumSpikePro({ disabled = false }) {
       );
       const otpData = await readJsonResponse(otpResponse);
       if (!otpResponse.ok) {
-        throw new Error(
-          otpData?.error?.message || "OTP session authorization failed."
-        );
+        throw new Error(otpData?.error?.message || "OTP session authorization failed.");
       }
 
       const wsUrl = otpData?.data?.url;
       if (!wsUrl) {
-        throw new Error(
-          "Deriv REST API did not return a valid WebSocket endpoint."
-        );
+        throw new Error("Deriv REST API did not return a valid WebSocket endpoint.");
       }
 
       addLog("Establishing real-time feed with Deriv API...");
@@ -538,7 +526,7 @@ export default function QuantumSpikePro({ disabled = false }) {
       ws.onopen = () => {
         isExecutingRef.current = false;
         addLog(
-          `✅ CONNECTED: Market=${currentBlockSymbolRef.current} | Direction=${currentDirectionRef.current} | Base Stake=$${Number(minStake).toFixed(2)} | Target/Win=$${unitProfit.toFixed(2)} (${(profitRatio * 100).toFixed(1)}%) | Duration=${durationValue}${durationUnit}`
+          `✅ CONNECTED: Market=${currentBlockSymbolRef.current} | Type=${currentContractType} | Base Stake=$${Number(minStake).toFixed(2)} | Target/Win=$${unitProfit.toFixed(2)} (${(profitRatio * 100).toFixed(1)}%)`
         );
 
         ws.send(
@@ -653,19 +641,22 @@ export default function QuantumSpikePro({ disabled = false }) {
 
             const isWin =
               profit > 0 || poc.status === "won" || row.outcome === "W";
-
-            // DIRECTION LOGIC: Keep current direction on WIN, toggle direction on LOSS
-            if (isWin) {
-              lossStreakRef.current = 0;
-              addLog(`🔄 DIRECTION MAINTAINED: Position won. Retaining ${currentDirectionRef.current} for next trade.`);
-            } else {
-              lossStreakRef.current += 1;
-              const nextDir = currentDirectionRef.current === "CALL" ? "PUT" : "CALL";
-              currentDirectionRef.current = nextDir;
-              addLog(`🔀 DIRECTION SWITCHED: Position lost. Swapping direction to ${nextDir} for next trade.`);
-            }
-
             totalSessionProfitRef.current += Number(row.profitLoss || 0);
+
+            // DYNAMIC CONTRACT TYPE TRANSITION LOGIC:
+            // - If WIN: Keep current contract type.
+            // - If LOSS: Switch contract type between PUT and CALL.
+            // DYNAMIC CONTRACT TYPE TRANSITION LOGIC (REVERSED):
+            // - If WIN: Switch contract type between PUT and CALL.
+            // - If LOSS: Keep current contract type.
+            let nextType = currentContractType;
+            if (isWin) {
+              nextType = currentContractType === "PUT" ? "CALL" : "PUT";
+              setCurrentContractType(nextType);
+              addLog(`⚡ DYNAMIC SWITCH: Win registered. Switched contract type to [${nextType}]`);
+            } else {
+              addLog(`🎯 MAINTAINED: Loss registered. Retaining contract type [${currentContractType}]`);
+            }
 
             const updatedWinsCount = row.blockWins;
             const updatedSettledCount = settledIdsRef.current.size;
@@ -676,7 +667,8 @@ export default function QuantumSpikePro({ disabled = false }) {
             saveSessionToStorage(
               updatedWinsCount,
               updatedSettledCount,
-              totalSessionProfitRef.current
+              totalSessionProfitRef.current,
+              nextType
             );
 
             setBot3State((prev) => ({
@@ -689,94 +681,61 @@ export default function QuantumSpikePro({ disabled = false }) {
                 isWin ? "WIN 🟢" : "LOSS 🔴"
               } | P/L=$${Number(row.profitLoss || 0).toFixed(
                 2
-              )} | Cycle P/L=$${(engineRef3?.current?.cycleRunningBalance || 0).toFixed(
-                2
-              )} | Net Acc=$${totalSessionProfitRef.current.toFixed(2)}`
+              )} | Next Type=${nextType} | Net Acc=$${totalSessionProfitRef.current.toFixed(2)}`
             );
 
-            // USER-DEFINED TAKE PROFIT CHECK
+            // USER-DEFINED TAKE PROFIT
             const tpVal = Number(takeProfit);
             if (tpVal > 0 && totalSessionProfitRef.current >= tpVal) {
-              addLog(
-                `🎯 [TAKE PROFIT HIT] Net profit ($${totalSessionProfitRef.current.toFixed(
-                  2
-                )}) reached target ($${tpVal.toFixed(2)}). Stopping engine.`
-              );
+              addLog(`🎯 [TAKE PROFIT HIT] Net profit reached target. Stopping engine.`);
               stopBot();
               return;
             }
 
-            // USER-DEFINED STOP LOSS CHECK
+            // USER-DEFINED STOP LOSS
             const slVal = Number(stopLoss);
             if (slVal > 0 && totalSessionProfitRef.current <= -Math.abs(slVal)) {
-              addLog(
-                `🛑 [STOP LOSS HIT] Net drawdown ($${totalSessionProfitRef.current.toFixed(
-                  2
-                )}) reached threshold (-$${Math.abs(slVal).toFixed(2)}). Stopping engine.`
-              );
+              addLog(`🛑 [STOP LOSS HIT] Net drawdown reached threshold. Stopping engine.`);
               stopBot();
               return;
             }
 
-            // 1. HARD DRAWDOWN CHECK: Limit set to -25 * base stake
+            // DRAWDOWN LIMIT
             const maxDrawdownLimit = -1 * Number(minStake) * 2500;
             if (totalSessionProfitRef.current < maxDrawdownLimit) {
-              addLog(
-                `🚨 [DRAWDOWN TRIGGERED] Session deficit ($${totalSessionProfitRef.current.toFixed(
-                  2
-                )}) crossed threshold limit ($${maxDrawdownLimit.toFixed(
-                  2
-                )}).`
-              );
-              autoRestartFreshBlock(`Maximum Session Drawdown Exceeded ($${maxDrawdownLimit.toFixed(2)})`);
+              autoRestartFreshBlock(`Maximum Session Drawdown Exceeded`);
               return;
             }
 
-            // 2. HIGH-STAKE WIN CAP: Stake > $7.00
             if (isWin && activeStakeRef.current > 700.0) {
-              autoRestartFreshBlock(
-                `[CAP TRIGGERED] Target win achieved at high stake level ($${activeStakeRef.current.toFixed(
-                  2
-                )} > $7.00).`
-              );
+              autoRestartFreshBlock(`[CAP TRIGGERED] Target win achieved at high stake level.`);
               return;
             }
 
-            // 3. RECOVERY THRESHOLD ACHIEVED: Wins >= 10
             const totalLosses = engineRef3?.current?.totalLosses || 0;
             const ratio = engineRef3?.current?.RATIO || 1.9;
             const stakingModifier = engineRef3?.current?.stakingModifier || 0;
             const rawExpected = totalLosses > 0 ? totalLosses / ratio : 1.0;
             const expectedWinsRequired = Math.ceil(rawExpected) + stakingModifier;
 
-            if (
-              updatedWinsCount >= 300 &&
-              updatedWinsCount >= expectedWinsRequired
-            ) {
-              autoRestartFreshBlock(
-                `[EARLY EXIT TRIGGERED] Banked ${updatedWinsCount} wins (>=10) fulfilling calculated recovery threshold (${expectedWinsRequired} req).`
-              );
+            if (updatedWinsCount >= 300 && updatedWinsCount >= expectedWinsRequired) {
+              autoRestartFreshBlock(`[EARLY EXIT TRIGGERED] Banked target recovery wins.`);
               return;
             }
 
-            // 4. STANDARD TARGET OR 25 BANKED WINS REACHED
-            if (
-              updatedWinsCount >= 250 ||
-              totalSessionProfitRef.current >= blockTargetProfit
-            ) {
-              autoRestartFreshBlock(
-                `[TARGET REACHED] Reached ${updatedWinsCount} banked wins ($${totalSessionProfitRef.current.toFixed(
-                  2
-                )} net profit).`
-              );
+            if (updatedWinsCount >= 250 || totalSessionProfitRef.current >= blockTargetProfit) {
+              autoRestartFreshBlock(`[TARGET REACHED] Reached target banked wins.`);
               return;
             }
 
-            // 5. MAXIMUM BLOCK LIMIT REACHED (50 TRADES)
+            if (!isWin) {
+              lossStreakRef.current += 1;
+            } else {
+              lossStreakRef.current = 0;
+            }
+
             if (updatedSettledCount >= 500) {
-              autoRestartFreshBlock(
-                `[BLOCK ROW LIMIT REACHED] Reached maximum block capacity of 50 settled trades.`
-              );
+              autoRestartFreshBlock(`[BLOCK ROW LIMIT REACHED] Reached maximum block capacity.`);
               return;
             }
 
@@ -793,11 +752,9 @@ export default function QuantumSpikePro({ disabled = false }) {
         clearExecutionTimeout();
         isExecutingRef.current = false;
 
-        if (!isTradingRef.current) {
-          return;
-        }
+        if (!isTradingRef.current) return;
 
-        addLog("🔄 RECONNECTING: Connection lost. Re-establishing link in 3 seconds...");
+        addLog("🔄 RECONNECTING: Re-establishing link in 3 seconds...");
         setTimeout(() => {
           if (isTradingRef.current) {
             executeStart();
@@ -833,157 +790,201 @@ export default function QuantumSpikePro({ disabled = false }) {
   const currentUnitConfig = DURATION_UNITS.find((u) => u.id === durationUnit) || DURATION_UNITS[2];
 
   return (
-    <div className={`aegis-container ${disabled ? "disabled" : ""}`}>
-      <div className="aegis-card">
-        <div className="aegis-header">
-          <h2>Quantum Spike Pro (Bot 3)</h2>
-          <span className={`status-badge ${bot3State.isTrading ? "active" : "inactive"}`}>
-            {bot3State.isTrading ? "RUNNING" : "STOPPED"}
+    <div
+      className={`bot-card premium-card ${
+        bot3State.isTrading ? "active-trading" : ""
+      }`}
+    >
+      <div className="bot-header">
+        <div className="bot-title-group">
+          <div className="title-with-badge">
+            <h2>QuantumSpikePro</h2>
+            <span className="premium-badge">PRO</span>
+          </div>
+          <span className="bot-subtitle">
+            High-Frequency Spike Execution • Adaptive Quantum Recovery
           </span>
         </div>
+        <span className="account-tag">{accountType.toUpperCase()}</span>
+      </div>
 
-        <div className="aegis-controls-grid">
-          <div className="control-group">
-            <label>Base Stake ($)</label>
-            <input
-              type="number"
-              min="1.0"
-              step="0.5"
-              value={minStake}
-              onChange={handleStakeChange}
-              disabled={bot3State.isTrading}
-            />
-          </div>
+      <div className="bot-explanation">
+        <p className="notice-highlight">
+          ⚠️ Market locked to <strong>{activeMarketLabel}</strong> for current trade block.
+        </p>
+        <p className="risk-warning-banner" style={{ color: "#a0aec0", fontSize: "0.85rem", marginTop: "4px" }}>
+          💡 Profit Ratio range is 25% – 75%. Higher ratios increase target payouts per win but scale recovery stakes faster during loss streaks.
+        </p>
+      </div>
 
-          <div className="control-group">
-            <label>Profit Ratio</label>
-            <input
-              type="number"
-              min="0.25"
-              max="0.75"
-              step="0.05"
-              value={profitRatio}
-              onChange={handleRatioChange}
-              disabled={bot3State.isTrading}
-            />
-          </div>
+      <div className="config-grid triple-field" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", marginBottom: "16px" }}>
+        <div className="form-field">
+          <label>Base Stake ($ Min: 1.00)</label>
+          <input
+            type="number"
+            step="0.50"
+            min="1.00"
+            value={minStake}
+            onChange={handleStakeChange}
+            disabled={bot3State.isTrading || disabled}
+          />
+        </div>
 
-          <div className="control-group">
-            <label>Duration Unit</label>
-            <select
-              value={durationUnit}
-              onChange={handleDurationUnitChange}
-              disabled={bot3State.isTrading}
-            >
-              {DURATION_UNITS.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.label}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="form-field">
+          <label>Profit Ratio ({(profitRatio * 100).toFixed(0)}%)</label>
+          <input
+            type="number"
+            step="0.05"
+            min="0.25"
+            max="0.75"
+            value={profitRatio}
+            onChange={handleRatioChange}
+            disabled={bot3State.isTrading || disabled}
+          />
+        </div>
 
-          <div className="control-group">
-            <label>Duration ({currentUnitConfig.min}-{currentUnitConfig.max || "∞"})</label>
+        <div className="form-field">
+          <label>Duration ({currentUnitConfig.min}-{currentUnitConfig.max || "∞"})</label>
+          <div style={{ display: "flex", gap: "6px" }}>
             <input
               type="number"
               min={currentUnitConfig.min}
               max={currentUnitConfig.max}
               value={durationValue}
               onChange={handleDurationValueChange}
-              disabled={bot3State.isTrading}
+              disabled={bot3State.isTrading || disabled}
+              style={{ width: "60%" }}
             />
-          </div>
-
-          <div className="control-group">
-            <label>Take Profit ($)</label>
-            <input
-              type="number"
-              min="0"
-              step="1"
-              value={takeProfit}
-              onChange={handleTakeProfitChange}
-              disabled={bot3State.isTrading}
-            />
-          </div>
-
-          <div className="control-group">
-            <label>Stop Loss ($)</label>
-            <input
-              type="number"
-              min="0"
-              step="1"
-              value={stopLoss}
-              onChange={handleStopLossChange}
-              disabled={bot3State.isTrading}
-            />
+            <select
+              value={durationUnit}
+              onChange={handleDurationUnitChange}
+              disabled={bot3State.isTrading || disabled}
+              style={{ width: "40%" }}
+            >
+              {DURATION_UNITS.map((unit) => (
+                <option key={unit.id} value={unit.id}>
+                  {unit.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
+      </div>
 
-        <div className="aegis-info-panel">
-          <div className="info-item">
-            <span>Market:</span>
-            <strong>{activeMarketLabel}</strong>
-          </div>
-          <div className="info-item">
-            <span>Active Direction:</span>
-            <strong className={currentDirectionRef.current === "CALL" ? "text-green" : "text-red"}>
-              {currentDirectionRef.current}
-            </strong>
-          </div>
-          <div className="info-item">
-            <span>Next Stake:</span>
-            <strong>${nextStakeVal.toFixed(2)}</strong>
-          </div>
-          <div className="info-item">
-            <span>Banked Wins:</span>
-            <strong>{bankedWinsCount}</strong>
-          </div>
-          <div className="info-item">
-            <span>Settled Trades:</span>
-            <strong>{totalSettledCount}</strong>
-          </div>
-          <div className="info-item">
-            <span>Session P/L:</span>
-            <strong className={totalSessionProfitRef.current >= 0 ? "text-green" : "text-red"}>
-              ${totalSessionProfitRef.current.toFixed(2)}
-            </strong>
-          </div>
+      <div className="config-grid dual-field" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "16px" }}>
+        <div className="form-field">
+          <label>Take Profit ($ Max Limit, Default = 5x Stake)</label>
+          <input
+            type="number"
+            step="1.00"
+            min="0"
+            placeholder={(minStake * 5).toFixed(2)}
+            value={takeProfit}
+            onChange={handleTakeProfitChange}
+            disabled={bot3State.isTrading || disabled}
+          />
         </div>
 
-        <div className="aegis-actions">
-          {!bot3State.isTrading ? (
-            <>
-              {hasSavedSession && (
-                <button className="btn btn-resume" onClick={handleResumeTrades}>
-                  Resume Session
-                </button>
-              )}
-              <button className="btn btn-start" onClick={handleStartNewCycle}>
-                Start New Block
+        <div className="form-field">
+          <label>Stop Loss ($ Max Loss, Default = 30x Stake)</label>
+          <input
+            type="number"
+            step="1.00"
+            min="0"
+            placeholder={(minStake * 30).toFixed(2)}
+            value={stopLoss}
+            onChange={handleStopLossChange}
+            disabled={bot3State.isTrading || disabled}
+          />
+        </div>
+      </div>
+
+      <div className="metrics-ribbon">
+        <div className="metric-item">
+          <span className="metric-label">Active Market</span>
+          <span className="metric-value">{activeMarketLabel}</span>
+        </div>
+        <div className="metric-item">
+          <span className="metric-label">Contract Type</span>
+          <span className="metric-value" style={{ color: currentContractType === "PUT" ? "#f56565" : "#48bb78" }}>
+            {currentContractType}
+          </span>
+        </div>
+        <div className="metric-item">
+          <span className="metric-label">Engine Status</span>
+          <span
+            className={`metric-value ${
+              bot3State.isTrading ? "status-on" : "status-off"
+            }`}
+          >
+            {bot3State.isTrading ? "ONLINE" : "OFF"}
+          </span>
+        </div>
+        <div className="metric-item">
+          <span className="metric-label">Next Stake</span>
+          <span className="metric-value">${nextStakeVal.toFixed(2)}</span>
+        </div>
+        <div className="metric-item">
+          <span className="metric-label">Running Balance</span>
+          <span
+            className={`metric-value ${
+              (engineRef3?.current?.cycleRunningBalance || 0) >= 0
+                ? "highlight-win"
+                : "status-off"
+            }`}
+          >
+            ${(engineRef3?.current?.cycleRunningBalance || 0).toFixed(2)}
+          </span>
+        </div>
+        <div className="metric-item">
+          <span className="metric-label">Banked Wins</span>
+          <span className="metric-value highlight-win">
+            {bankedWinsCount} / {totalSettledCount}
+          </span>
+        </div>
+      </div>
+
+      <div className="controls">
+        {!bot3State.isTrading ? (
+          hasSavedSession ? (
+            <div className="dual-controls">
+              <button
+                onClick={handleResumeTrades}
+                className="start-btn premium-btn resume-btn"
+                disabled={disabled}
+              >
+                Resume Trades ({bankedWinsCount} Wins)
               </button>
-            </>
+              <button
+                onClick={handleStartNewCycle}
+                className="start-btn new-cycle-btn"
+                disabled={disabled}
+              >
+                Start New Cycle (From 0)
+              </button>
+            </div>
           ) : (
-            <button className="btn btn-stop" onClick={stopBot}>
-              Pause Engine
+            <button
+              onClick={handleStartNewCycle}
+              className="start-btn premium-btn"
+              disabled={disabled}
+            >
+              Start QuantumSpikePro
             </button>
-          )}
-        </div>
+          )
+        ) : (
+          <button onClick={stopBot} className="stop-btn">
+            Stop QuantumSpikePro
+          </button>
+        )}
+      </div>
 
-        <div className="aegis-logs">
-          <h3>Activity Logs</h3>
-          <div className="log-window">
-            {bot3State.logs.length === 0 ? (
-              <p className="no-logs">No activity recorded yet.</p>
-            ) : (
-              bot3State.logs.map((log, index) => (
-                <div key={index} className="log-line">
-                  {log}
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+      <div className="console-wrapper">
+        <div className="console-title">Engine Terminal Output</div>
+        <pre className="logs-console">
+          {bot3State.logs.join("\n") ||
+            "QuantumSpikePro standing by. Ready to launch trading session..."}
+        </pre>
       </div>
     </div>
   );
