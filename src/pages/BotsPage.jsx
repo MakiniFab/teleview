@@ -8,11 +8,11 @@ import TroyEngine from "../components/TroyEngine";
 import "./BotsPage.css";
 
 const BOT_SUITE = [
+  { id: "titan", name: "Titan Multi-Market", isAccessible: true, badge: "PRO", icon: "🏛️" },
+  { id: "troy", name: "Troy Engine", isAccessible: true, badge: "PRO", icon: "⚔️" },
   { id: "aegis", name: "Aegis Matrix", isAccessible: true, badge: "PREMIUM", icon: "🛡️" },
   { id: "nexus", name: "Nexus Pivot Engine", isAccessible: true, badge: "PREMIUM", icon: "🛡️" },
   { id: "quantum", name: "Quantum Spike Pro", isAccessible: true, badge: "PREMIUM", icon: "🛡️" },
-  { id: "titan", name: "Titan Multi-Market", isAccessible: true, badge: "PRO", icon: "🏛️" },
-  { id: "troy", name: "Troy Engine", isAccessible: true, badge: "PRO", icon: "⚔️" },
 ];
 
 const BOT_ENGINES = {
